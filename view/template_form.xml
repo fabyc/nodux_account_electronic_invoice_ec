@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<data>
+    <xpath
+        expr="/form/notebook/page[@id='accounting']"
+        position="after">
+        <page string="Comp Elect-Tipo Imp." col="4" id="impuesto">
+            <label name="iva_category"/>
+            <field name="iva_category"/>
+            <label name="ice"/>
+            <field name="ice"/>
+            <newline/>
+            <label name="iva_tarifa"/>
+            <field name="iva_tarifa"/>
+            <label name="ice_tarifa"/>
+            <field name="ice_tarifa"/>
+        </page>
+    </xpath>
+</data>

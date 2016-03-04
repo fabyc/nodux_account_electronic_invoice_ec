@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<data>
+    <xpath expr="/form/notebook/page[@id='code']/field[@name='credit_note_tax_sign']" position="after">
+    <newline/>
+       <separator string="Codigo de impuesto Retencion-Comprobantes Electronicos" colspan="4" id="retencion"/>
+       <label name="code_electronic"/>
+       <field name="code_electronic"/>
+       <label name="code_withholding"/>
+       <field name="code_withholding"/>
+    </xpath>   
+</data>

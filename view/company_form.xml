@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<data>
+    <xpath expr="/form/notebook/page[@id='reports']" position="after">
+        <page string="NODUX WS" id="sri">
+            <newline/>
+            <separator string="Usuario y password de autenticacion" id='auth'/>
+            <newline/>
+            <label name="user"/>
+            <field name="user" widget="password"/>
+            <label name="password"/>
+            <field name="password" widget="password"/>
+            <newline/>
+            <newline/>
+            <separator string="Firma Digital" id='firma'/>
+            <newline/>
+            <label name="file_pk12"/>
+            <field name="file_pk12"/>
+            <label name="pass_pk12"/>
+            <field name="pass_pk12" widget="password"/>
+            <newline/>
+            <label name="logo"/>
+            <field xfill="0" xexpand="1" name="logo" img_width="80" img_height="80" height="80" width="80" widget="image"/>
+        </page>
+    </xpath>
+</data>
+

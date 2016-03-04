@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+       <record model="ir.ui.view" id="tax_view_form">
+            <field name="model">account.tax</field>
+            <field name="type">form</field>
+            <field name="inherit" ref="account.tax_view_form"/>
+            <field name="name">tax_form</field>
+        </record>
+        <record model="ir.ui.view" id="tax_electronic_view_tree">
+            <field name="model">account.tax.electronic</field>
+            <field name="type">tree</field>
+            <field name="name">tax_electronic_tree</field>
+        </record>
+
+        <record model="ir.ui.view" id="tax_electronic_view_form">
+            <field name="model">account.tax.electronic</field>
+            <field name="type">form</field>
+            <field name="name">tax_electronic_form</field>
+        </record>
+        
+        <record model="ir.action.act_window" id="act_tax_electronic_form">
+            <field name="name">Codigo de impuesto Retencion-Comprobantes Electronicos</field>
+            <field name="res_model">account.tax.electronic</field>
+        </record>
+        <record model="ir.action.act_window.view" id="act_tax_electronic_form_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="tax_electronic_view_tree"/>
+            <field name="act_window" ref="act_tax_electronic_form"/>
+        </record>
+        <record model="ir.action.act_window.view" id="act_tax_electronic_form_view2">
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="tax_electronic_view_form"/>
+            <field name="act_window" ref="act_tax_electronic_form"/>
+        </record>
+        <menuitem parent="account.menu_taxes" action="act_tax_electronic_form"
+            id="menu_tax_electronic_form"/>
+            
+            
+        <record model="ir.ui.view" id="tax_special_view_tree">
+            <field name="model">account.tax.special</field>
+            <field name="type">tree</field>
+            <field name="name">tax_special_tree</field>
+        </record>
+
+        <record model="ir.ui.view" id="tax_special_view_form">
+            <field name="model">account.tax.special</field>
+            <field name="type">form</field>
+            <field name="name">tax_special_form</field>
+        </record>
+        
+        <record model="ir.action.act_window" id="act_tax_special_form">
+            <field name="name">Impuesto a los Consumos Especiales</field>
+            <field name="res_model">account.tax.special</field>
+        </record>
+        <record model="ir.action.act_window.view" id="act_tax_special_form_view1">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="tax_special_view_tree"/>
+            <field name="act_window" ref="act_tax_special_form"/>
+        </record>
+        <record model="ir.action.act_window.view" id="act_tax_special_form_view2">
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="tax_special_view_form"/>
+            <field name="act_window" ref="act_tax_special_form"/>
+        </record>
+        <menuitem parent="account.menu_taxes" action="act_tax_special_form"
+            id="menu_tax_special_form"/>
+    </data>
+</tryton>

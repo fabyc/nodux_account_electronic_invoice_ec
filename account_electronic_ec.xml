@@ -1,0 +1,634 @@
+<?xml version='1.0'?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+        <record model="account.tax.electronic" id="ate_1">
+            <field name="name">RETENCION DE IVA 10%</field>
+            <field name="code">9</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_2">
+            <field name="name">RETENCION DE IVA 20%</field>
+            <field name="code">10</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_3">
+            <field name="name">RETENCION DE IVA 30%</field>
+            <field name="code">1</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_4">
+            <field name="name">RETENCION DE IVA 70%</field>
+            <field name="code">2</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_5">
+            <field name="name">RETENCION DE IVA 100%</field>
+            <field name="code">3</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_6">
+            <field name="name">RETENCION DE IVA 0%</field>
+            <field name="code">7</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_7">
+            <field name="name">NO PROCEDE RETENCION</field>
+            <field name="code">8</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_8">
+            <field name="name">RETENCION ISD</field>
+            <field name="code">4580</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_9">
+            <field name="name">Honorarios profesionales y demás pagos por servicios relacionados con el título profesional</field>
+            <field name="code">303</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_10">
+            <field name="name">Servicios predomina el intelecto no relacionados con el título profesional</field>
+            <field name="code">304</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_11">
+            <field name="name">Comisiones y demás pagos por servicios predomina intelecto no relacionados con el título profesional</field>
+            <field name="code">304A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_12">
+            <field name="name">Pagos a notarios y registradores de la propiedad y mercantil por sus actividades ejercidas como tales</field>
+            <field name="code">304B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_13">
+            <field name="name">Pagos a deportistas, entrenadores, árbitros, miembros del cuerpo técnico por sus actividades ejercidas como
+tales</field>
+            <field name="code">304C</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_14">
+            <field name="name">Pagos a artistas por sus actividades ejercidas como tales</field>
+            <field name="code">304D</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_15">
+            <field name="name">Honorarios y demás pagos por servicios de docencia</field>
+            <field name="code">304E</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_16">
+            <field name="name">Servicios predomina la mano de obra</field>
+            <field name="code">307</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_17">
+            <field name="name">Utilización o aprovechamiento de la imagen o renombre</field>
+            <field name="code">308</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_18">
+            <field name="name">Servicios prestados por medios de comunicación y agencias de publicidad</field>
+            <field name="code">309</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_19">
+            <field name="name">Servicio de transporte privado de pasajeros o transporte público o privado de carga</field>
+            <field name="code">310</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_20">
+            <field name="name">Por pagos a través de liquidación de compra (nivel cultural o rusticidad)</field>
+            <field name="code">311</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_21">
+            <field name="name">Transferencia de bienes muebles de naturaleza corporal</field>
+            <field name="code">312</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_22">
+            <field name="name">Compra de bienes de origen agrícola, avícola, pecuario, apícola, cunícula, bioacuático, y forestal</field>
+            <field name="code">312A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_23">
+            <field name="name">Regalías por concepto de franquicias de acuerdo a Ley de Propiedad Intelectual - pago a personas naturales</field>
+            <field name="code">314A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_24">
+            <field name="name">Cánones, derechos de autor, marcas, patentes y similares de acuerdo a Ley de Propiedad Intelectual – pago a
+personas naturales</field>
+            <field name="code">314B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_25">
+            <field name="name">Regalías por concepto de franquicias de acuerdo a Ley de Propiedad Intelectual - pago a sociedades</field>
+            <field name="code">314C</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_26">
+            <field name="name">Cánones, derechos de autor, marcas, patentes y similares de acuerdo a Ley de Propiedad Intelectual – pago a
+sociedades</field>
+            <field name="code">314D</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_27">
+            <field name="name">Cuotas de arrendamiento mercantil, inclusive la de opción de compra</field>
+            <field name="code">319</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_28">
+            <field name="name">Por arrendamiento bienes inmuebles</field>
+            <field name="code">320</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_29">
+            <field name="name">Seguros y reaseguros (primas y cesiones)</field>
+            <field name="code">322</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_30">
+            <field name="name">Por rendimientos financieros pagados a naturales y sociedades (No a IFIs)</field>
+            <field name="code">323</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_31">
+            <field name="name">Por RF: depósitos Cta. Corriente</field>
+            <field name="code">323A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_32">
+            <field name="name">Por RF: depósitos Cta. Ahorros Sociedades</field>
+            <field name="code">323B1</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_33">
+            <field name="name">Por RF: depósito a plazo fijo gravados</field>
+            <field name="code">323E</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_34">
+            <field name="name">Por RF: depósito a plazo fijo exentos</field>
+            <field name="code">323E2</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_35">
+            <field name="name">Por rendimientos financieros: operaciones de reporto - repos</field>
+            <field name="code">323F</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_36">
+            <field name="name">Por RF: inversiones (captaciones) rendimientos distintos de aquellos pagados a IFIs</field>
+            <field name="code">323G</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_37">
+            <field name="name">Por RF: obligaciones</field>
+            <field name="code">323H</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_38">
+            <field name="name">Por RF: bonos convertible en acciones</field>
+            <field name="code">323I</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_39">
+            <field name="name">Por RF: Inversiones en títulos valores en renta fija gravados</field>
+            <field name="code">323M</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_40">
+            <field name="name">Por RF: Inversiones en títulos valores en renta fija exentos</field>
+            <field name="code">323N</field>
+        </record>
+        
+        <record model="account.tax.electronic" id="ate_41">
+            <field name="name">Por RF: Intereses pagados a bancos y otras entidades sometidas al control de la Superintendencia de Bancos y
+de la Economía Popular y Solidaria</field>
+            <field name="code">3230</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_42">
+            <field name="name">Por RF: Intereses pagados por entidades del sector público a favor de sujetos pasivos</field>
+            <field name="code">323P</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_43">
+            <field name="name">Por RF: Otros intereses y rendimientos financieros gravados</field>
+            <field name="code">323Q</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_44">
+            <field name="name">Por RF: Otros intereses y rendimientos financieros exentos</field>
+            <field name="code">323R</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_45">
+            <field name="name">Por RF: Intereses en operaciones de crédito entre instituciones del sistema financiero y entidades economía
+popular y solidaria.</field>
+            <field name="code">324A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_46">
+            <field name="name">Por RF: Por inversiones entre instituciones del sistema financiero y entidades economía popular y solidaria.</field>
+            <field name="code">324B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_47">
+            <field name="name">Anticipo dividendos</field>
+            <field name="code">325</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_48">
+            <field name="name">Dividendos anticipados préstamos accionistas, beneficiarios o partìcipes</field>
+            <field name="code">325A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_49">
+            <field name="name">Dividendos distribuidos que correspondan al impuesto a la renta único establecido en el art. 27 de la lrti</field>
+            <field name="code">326</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_50">
+            <field name="name">Dividendos distribuidos a personas naturales residentes</field>
+            <field name="code">327</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_51">
+            <field name="name">Dividendos distribuidos a sociedades residentes</field>
+            <field name="code">328</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_52">
+            <field name="name">Dividendos distribuidos a fideicomisos residentes</field>
+            <field name="code">329</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_53">
+            <field name="name">Dividendos gravados distribuidos en acciones (reinversión de utilidades sin derecho a reducción tarifa IR)</field>
+            <field name="code">330</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_54">
+            <field name="name">Dividendos exentos distribuidos en acciones (reinversión de utilidades con derecho a reducción tarifa IR)</field>
+            <field name="code">331</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_55">
+            <field name="name">Otras compras de bienes y servicios no sujetas a retención</field>
+            <field name="code">332</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_56">
+            <field name="name">Por la enajenación ocasional de acciones o participaciones y títulos valores</field>
+            <field name="code">332A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_57">
+            <field name="name">Compra de bienes inmuebles</field>
+            <field name="code">332B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_124">
+            <field name="name">Transporte público de pasajeros</field>
+            <field name="code">332C</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_58">
+            <field name="name">Pagos en el país por transporte de pasajeros o transporte internacional de carga, a compañías nacionales o
+extranjeras de aviación o marítimas</field>
+            <field name="code">332D</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_59">
+            <field name="name">Valores entregados por las cooperativas de transporte a sus socios</field>
+            <field name="code">332E</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_60">
+            <field name="name">Compraventa de divisas distintas al dólar de los Estados Unidos de América</field>
+            <field name="code">332F</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_61">
+            <field name="name">Pagos con tarjeta de crédito</field>
+            <field name="code">332G</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_62">
+            <field name="name">Pago al exterior tarjeta de crédito reportada por la Emisora de tarjeta de crédito, solo recap</field>
+            <field name="code">332H</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_63">
+            <field name="name">Enajenación de derechos representativos de capital y otros derechos cotizados en bolsa ecuatoriana</field>
+            <field name="code">333</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_64">
+            <field name="name">Enajenación de derechos representativos de capital y otros derechos no cotizados en bolsa ecuatoriana</field>
+            <field name="code">334</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_65">
+            <field name="name">Por loterías, rifas, apuestas y similares</field>
+            <field name="code">335</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_66">
+            <field name="name">Por venta de combustibles a comercializadoras</field>
+            <field name="code">336</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_67">
+            <field name="name">Por venta de combustibles a distribuidores</field>
+            <field name="code">337</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_68">
+            <field name="name">Compra local de banano a productor</field>
+            <field name="code">338</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_69">
+            <field name="name">Liquidación impuesto único a la venta local de banano de producción propia</field>
+            <field name="code">339</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_125">
+            <field name="name">Impuesto único a la exportación de banano de producción propia - componente 1</field>
+            <field name="code">340</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_70">
+            <field name="name">Impuesto único a la exportación de banano de producción propia - componente 2</field>
+            <field name="code">341</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_71">
+            <field name="name">Impuesto único a la exportación de banano producido por terceros</field>
+            <field name="code">342</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_72">
+            <field name="name">Por energía eléctrica</field>
+            <field name="code">343A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_73">
+            <field name="name">Por actividades de construcción de obra material inmueble, urbanización, lotización o actividades similares</field>
+            <field name="code">343B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_74">
+            <field name="name">Otras retenciones aplicables el 2%</field>
+            <field name="code">344</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_75">
+            <field name="name">Pago local tarjeta de crédito reportada por la Emisora de tarjeta de crédito, solo recap</field>
+            <field name="code">344A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_76">
+            <field name="name">Ganancias de capital</field>
+            <field name="code">346A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_77">
+            <field name="name">Pago al exterior - Rentas Inmobiliarias</field>
+            <field name="code">500</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_78">
+            <field name="name">Pago al exterior - Beneficios Empresariales</field>
+            <field name="code">501</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_79">
+            <field name="name">Pago al exterior - Servicios Empresariales</field>
+            <field name="code">502</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_80">
+            <field name="name">Pago al exterior - Navegación Marítima y/o aérea</field>
+            <field name="code">503</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_81">
+            <field name="name">Pago al exterior- Dividendos distribuidos a personas naturales</field>
+            <field name="code">504</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_82">
+            <field name="name">Pago al exterior - Dividendos a sociedades</field>
+            <field name="code">504A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_83">
+            <field name="name">Pago al exterior - Dividendos a sociedades</field>
+            <field name="code">504B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_84">
+            <field name="name">Pago al exterior - Dividendos anticipados préstamos accionistas, beneficiarios o partìcipes</field>
+            <field name="code">504C</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_85">
+            <field name="name">Pago al exterior - Dividendos a fideicomisos</field>
+            <field name="code">504D</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_86">
+            <field name="name">Pago al exterior- Dividendos distribuidos a personas naturales (paraísos fiscales)</field>
+            <field name="code">504E</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_87">
+            <field name="name">Pago al exterior - Dividendos a sociedades (paraísos fiscales)</field>
+            <field name="code">504F</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_88">
+            <field name="name">Pago al exterior - Anticipo dividendos (paraísos fiscales)</field>
+            <field name="code">504G</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_89">
+            <field name="name">Pago al exterior - Dividendos a fideicomisos (paraísos fiscales)</field>
+            <field name="code">504H</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_90">
+            <field name="name">Pago al exterior - Rendimientos financieros</field>
+            <field name="code">505</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_91">
+            <field name="name">Pago al exterior – Intereses de créditos de Instituciones Financieras del exterior</field>
+            <field name="code">505A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_92">
+            <field name="name">Pago al exterior – Intereses de créditos de gobierno a gobierno</field>
+            <field name="code">505B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_93">
+            <field name="name">Pago al exterior – Intereses de créditos de organismos multilaterales</field>
+            <field name="code">505C</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_94">
+            <field name="name">Pago al exterior - Intereses por financiamiento de proveedores externos</field>
+            <field name="code">505D</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_95">
+            <field name="name">Pago al exterior - Intereses de otros créditos externos</field>
+            <field name="code">505E</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_96">
+            <field name="name">Pago al exterior - Otros Intereses y Rendimientos Financieros</field>
+            <field name="code">505F</field>
+        </record>
+         <record model="account.tax.electronic" id="ate_97">
+            <field name="name">Pago al exterior - Cánones, derechos de autor, marcas, patentes y similares</field>
+            <field name="code">509</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_98">
+            <field name="name">Pago al exterior - Regalías por concepto de franquicias</field>
+            <field name="code">509A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_99">
+            <field name="name">Pago al exterior - Ganancias de capital</field>
+            <field name="code">510</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_100">
+            <field name="name">Pago al exterior - Servicios profesionales independientes</field>
+            <field name="code">511</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_101">
+            <field name="name">Pago al exterior - Servicios profesionales dependientes</field>
+            <field name="code">512</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_102">
+            <field name="name">Pago al exterior - Artistas</field>
+            <field name="code">513</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_103">
+            <field name="name">Pago al exterior - Deportistas</field>
+            <field name="code">513A</field>
+        </record>
+         <record model="account.tax.electronic" id="ate_104">
+            <field name="name">Pago al exterior - Participación de consejeros</field>
+            <field name="code">514</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_105">
+            <field name="name">Pago al exterior - Entretenimiento Público</field>
+            <field name="code">515</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_106">
+            <field name="name">Pago al exterior - Pensiones</field>
+            <field name="code">516</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_107">
+            <field name="name">Pago al exterior - Reembolso de Gastos</field>
+            <field name="code">517</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_108">
+            <field name="name">Pago al exterior - Funciones Públicas</field>
+            <field name="code">518</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_109">
+            <field name="name">Pago al exterior - Estudiantes</field>
+            <field name="code">519</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_110">
+            <field name="name">Pago al exterior - Otros conceptos de ingresos gravados</field>
+            <field name="code">520</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_111">
+            <field name="name">Pago al exterior - Pago a proveedores de servicios hoteleros y turísticos en el exterior</field>
+            <field name="code">320A</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_112">
+            <field name="name">Pago al exterior - Arrendamientos mercantil internacional</field>
+            <field name="code">520B</field>
+            
+        </record><record model="account.tax.electronic" id="ate_113">
+            <field name="name">Pago al exterior - Comisiones por exportaciones y por promoción de turismo receptivo</field>
+            <field name="code">520D</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_114">
+            <field name="name">Pago al exterior - Por las empresas de transporte marítimo o aéreo y por empresas pesqueras de alta mar, por su
+actividad.</field>
+            <field name="code">520E</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_115">
+            <field name="name">Pago al exterior - Por las agencias internacionales de prensa</field>
+            <field name="code">520F</field>
+        </record><record model="account.tax.electronic" id="ate_116">
+            <field name="name">Pago al exterior - Contratos de fletamento de naves para empresas de transporte aéreo o marítimo internacional</field>
+            <field name="code">520G</field>
+        </record>
+         <record model="account.tax.electronic" id="ate_117">
+            <field name="name">Pago al exterior - Enajenación de derechos representativos de capital y otros derechos</field>
+            <field name="code">521</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_118">
+            <field name="name">Pago al exterior - Servicios técnicos, administrativos o de consultoría y regalías con convenio de doble tributación</field>
+            <field name="code">522A</field>
+        </record><record model="account.tax.electronic" id="ate_119">
+            <field name="name">Pago al exterior - Servicios técnicos, administrativos o de consultoría y regalías sin convenio de doble tributación</field>
+            <field name="code">522B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_120">
+            <field name="name">Pago al exterior - Servicios técnicos, administrativos o de consultoría y regalías en paraísos fiscales</field>
+            <field name="code">522C</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_121">
+            <field name="name">Pago al exterior - Seguros y reaseguros (primas y cesiones) con convenio de doble tributación</field>
+            <field name="code">523A</field>
+
+        </record><record model="account.tax.electronic" id="ate_122">
+            <field name="name">Pago al exterior - Seguros y reaseguros (primas y cesiones) sin convenio de doble tributación</field>
+            <field name="code">523B</field>
+        </record>
+        <record model="account.tax.electronic" id="ate_123">
+            <field name="name">Pago al exterior - Seguros y reaseguros (primas y cesiones) en paraísos fiscales</field>
+            <field name="code">523C</field>
+        </record>
+        <record model="account.tax.special" id="ats_29">
+            <field name="name">Productos del tabaco y sucedáneos del tabaco (abarcan los productos preparados totalmente o en parte utilizando como materia prima hojas de tabaco y destinados a ser fumados, chupados, inhalados, mascados o utilizados como rapé).</field>
+            <field name="code">3023</field>
+        </record>
+        <record model="account.tax.special" id="ats_1">
+            <field name="name">Bebidas gaseosas</field>
+            <field name="code">3051</field>
+        </record>
+        <record model="account.tax.special" id="ats_2">
+            <field name="name">Perfumes y aguas de tocador</field>
+            <field name="code">3610</field>
+        </record>
+        <record model="account.tax.special" id="ats_3">
+            <field name="name">Videojuegos</field>
+            <field name="code">3620</field>
+        </record>
+        <record model="account.tax.special" id="ats_4">
+            <field name="name">Armas de fuego, armas deportivas y municiones excepto aquellas adquiridas por la fuerza pública</field>
+            <field name="code">3630</field>
+        </record>
+        <record model="account.tax.special" id="ats_5">
+            <field name="name">Focos incandescentes excepto aquellos utilizados como insumos automotrices</field>
+            <field name="code">3640</field>
+        </record>
+        <record model="account.tax.special" id="ats_6">
+            <field name="name">Cocinas, calefones y otros de uso doméstico a gas SRI</field>
+            <field name="code">3670</field>
+        </record>
+        <record model="account.tax.special" id="ats_7">
+            <field name="name">Cocinas, calefones y otros de uso doméstico a gas SENAE</field>
+            <field name="code">3770</field>
+        </record>
+        <record model="account.tax.special" id="ats_8">
+            <field name="name">Vehículos motorizados cuyo precio de venta al público sea de hasta USD 20.000</field>
+            <field name="code">3073</field>
+        </record>
+        <record model="account.tax.special" id="ats_9">
+            <field name="name">Camionetas, furgonetas, camiones, y vehículos de rescate cuyo precio de venta al público sea de hasta USD 30.000</field>
+            <field name="code">3072</field>
+        </record>
+        <record model="account.tax.special" id="ats_10">
+            <field name="name">Vehículos motorizados, excepto camionetas, furgonetas, camiones y vehículos de rescate, cuyo precio de venta al público sea superior a USD 20.000 y de hasta USD 30.000</field>
+            <field name="code">3074</field>
+        </record>
+        <record model="account.tax.special" id="ats_11">
+            <field name="name">Vehículos motorizados, cuyo precio de venta al público sea superior a USD 30.000 y de hasta USD 40.000</field>
+            <field name="code">3075</field>
+        </record>
+        <record model="account.tax.special" id="ats_12">
+            <field name="name">Vehículos motorizados, cuyo precio de venta al público sea superior a USD 40.000 y de hasta USD 50.000</field>
+            <field name="code">3077</field>
+        </record>
+        <record model="account.tax.special" id="ats_13">
+            <field name="name">Vehículos motorizados cuyo precio de venta al público sea superior a USD 50.000 y de hasta USD 60.000</field>
+            <field name="code">3078</field>
+        </record>
+        <record model="account.tax.special" id="ats_14">
+            <field name="name">Vehículos motorizados cuyo precio de venta al público sea superior a USD 60.000 y de hasta USD 70.000</field>
+            <field name="code">3079</field>
+        </record>
+        <record model="account.tax.special" id="ats_15">
+            <field name="name">Vehículos motorizados cuyo precio de venta al público sea superior a USD 70.000</field>
+            <field name="code">3080</field>
+        </record>
+        <record model="account.tax.special" id="ats_16">
+            <field name="name">Vehículos híbridos o eléctricos cuyo precio de venta al público sea de hasta USD 35.000</field>
+            <field name="code">3171</field>
+        </record>
+        <record model="account.tax.special" id="ats_17">
+            <field name="name">Vehículos híbridos o eléctricos cuyo precio de venta al público sea superior a USD 35.000 y de hasta USD 40.000</field>
+            <field name="code">3172</field>
+        </record>
+        <record model="account.tax.special" id="ats_18">
+            <field name="name">Vehículos híbridos o eléctricos cuyo precio de venta al público sea superior a USD 40.000 y de hasta USD 50.000</field>
+            <field name="code">3173</field>
+        </record>
+        <record model="account.tax.special" id="ats_19">
+            <field name="name">Vehículos híbridos o eléctricos cuyo precio de venta al público sea superior a USD 50.000 y de hasta USD 60.000</field>
+            <field name="code">3174</field>
+        </record>
+        <record model="account.tax.special" id="ats_20">
+            <field name="name">Vehículos híbridos o eléctricos cuyo precio de venta al público sea superior a USD 60.000 y de hasta USD 70.000</field>
+            <field name="code">3175</field>
+        </record>
+        <record model="account.tax.special" id="ats_21">
+            <field name="name">Vehículos híbridos o eléctricos cuyo precio de venta al público sea superior a USD 70.000</field>
+            <field name="code">3176</field>
+        </record>
+        <record model="account.tax.special" id="ats_22">
+            <field name="name">Aviones, avionetas y helicópteros excepto aquellas destinadas al transporte comercial de pasajeros, carga y servicios; motos acuáticas, tricares, cuadrones, yates y barcos de recreo</field>
+            <field name="code">3081</field>
+        </record>
+        <record model="account.tax.special" id="ats_23">
+            <field name="name">Servicios de televisión pagada</field>
+            <field name="code">3092</field>
+        </record>
+        <record model="account.tax.special" id="ats_24">
+            <field name="name">Servicios de casinos, salas de juego (bingo - mecánicos) y otros juegos de azar</field>
+            <field name="code">3650</field>
+        </record>
+        <record model="account.tax.special" id="ats_25">
+            <field name="name">Las cuotas, membresías, afiliaciones, acciones y similares que cobren a sus miembros y usuarios los Clubes Sociales, para prestar sus servicios, cuyo monto en su conjunto supere los US $ 1.500 anuales</field>
+            <field name="code">3660</field>
+        </record>
+        <record model="account.tax.special" id="ats_26">
+            <field name="name">Cigarrillos rubio</field>
+            <field name="code">3011</field>
+        </record>
+        <record model="account.tax.special" id="ats_27">
+            <field name="name">Cigarrillos negros</field>
+            <field name="code">3021</field>
+        </record>
+        <record model="account.tax.special" id="ats_28">
+            <field name="name">Bebidas alcohólicas, distintas a la cerveza</field>
+            <field name="code">3031</field>
+        </record>
+        <record model="account.tax.special" id="ats_30">
+            <field name="name">Cerveza</field>
+            <field name="code">3041</field>
+        </record>
+        
+    </data>
+</tryton>

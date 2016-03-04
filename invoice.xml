@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<tryton>
+    <data>
+        
+        <record model="ir.action.report" id="account_invoice.report_invoice">
+            <field name="name">Comprobante Electronico</field>
+            <field name="model">account.invoice</field>
+            <field name="report_name">account.invoice</field>
+            <field name="report">nodux_account_electronic_invoice_ec/invoice.odt</field>
+            <field name="style">nodux_account_electronic_invoice_ec/header_A4.odt</field>
+        </record>
+        
+       
+         <record model="ir.ui.view" id="send_sri_lote_start_view_form">
+            <field name="model">nodux.account.electronic.invoice.ec.lote.start</field>
+            <field name="type">form</field>
+            <field name="name">send_sri_lote_form</field>
+        </record>
+       
+        <record model="ir.action.wizard" id="send_sri_lote">
+            <field name="name">Enviar SRI</field>
+            <field name="wiz_name">nodux.account.electronic.invoice.ec.lote</field>
+        </record>
+        
+         <record model="ir.action.keyword" id="action_send_sri_lote_keyword">
+            <field name="keyword">form_action</field>
+            <field name="model">account.invoice,-1</field>  <!-- Que vista de modelo aparece -->
+            <field name="action" ref="send_sri_lote"/>
+        </record>
+        
+        <record model="ir.ui.view" id="invoice_view_form">
+            <field name="model">account.invoice</field>
+            <field name="type">form</field>
+            <field name="inherit" ref="account_invoice.invoice_view_form"/>
+            <field name="name">invoice_form</field>
+        </record>
+        <record model="ir.ui.view" id="invoice_view_tree">
+            <field name="model">account.invoice</field>
+            <field name="type">tree</field>
+            <field name="inherit" ref="account_invoice.invoice_view_tree"/>
+            <field name="name">invoice_tree</field>
+        </record>
+        
+    </data>
+</tryton>
+
+        

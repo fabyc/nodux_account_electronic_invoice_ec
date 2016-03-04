@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<data>
+    <xpath expr="/form/notebook/page[@id='preferences']" position="after">
+        <page string="Conexion WS-Nodux" id="ws_nodux"
+            states="{'invisible': ~Eval('id').in_([1])}">
+            <label name="cabecera"/>
+            <field name="cabecera"/>
+            <label name="puerto"/>
+            <field name="puerto" widget="url"/>
+            <newline/>
+            <label name="direccion"/>
+            <field name="direccion" widget="url"/>
+            <label name="usuario_c"/>
+            <field name="usuario_c" widget="password"/>
+            <newline/>
+            <label name="pass_db_c"/>
+            <field name="pass_db_c" widget="password"/>
+            <label name="name_db_c"/>
+            <field name="name_db_c" widget="password"/>
+            <newline/>
+        </page>
+    </xpath>
+</data>
+
