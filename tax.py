@@ -15,6 +15,7 @@ __all__ = ['TaxElectronic', 'TaxSpecial', 'Tax']
 __metaclass__ = PoolMeta
 
 _IMPUESTO = [
+    ('', ''),
     ('1', 'RENTA'),
     ('2', 'IVA'),
     ('6', 'ISD'),
@@ -72,7 +73,11 @@ class Tax(ModelSQL, ModelView):
     code_electronic = fields.Many2One('account.tax.electronic',
         'Codigo para Retencion-Comprobantes Electronicos', help="Seleccionar el codigo por impuesto de acuerdo al porcentaje de retencion")
     code_withholding = fields.Selection(_IMPUESTO, 'Impuesto asignado para la retencion', help="Seleccionar el codigo de impuesto asignados para la retencion")
-
+    
     @classmethod
     def __setup__(cls):
         super(Tax, cls).__setup__()
+        
+    @staticmethod
+    def default_code_withholding():
+        return ''
