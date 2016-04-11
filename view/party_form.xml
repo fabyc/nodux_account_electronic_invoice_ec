@@ -3,38 +3,6 @@
 this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath
-        expr="/form/field[@name='code']"
-        position="after">
-        <newline/> 
-        <label name="commercial_name"/>
-        <field name="commercial_name"/>
-    </xpath>
-    
-     <xpath
-        expr="/form/notebook/page[@id='accounting']/field[@name='vat_number']"
-        position="after">
-        <newline/> 
-        <label name="mandatory_accounting"/>
-        <field name="mandatory_accounting"/>
-        <newline/> 
-    </xpath>
-    <xpath
-        expr="/form/notebook/page[@id='accounting']/field[@name='mandatory_accounting']"
-        position="after">
-        <newline/> 
-        <label name="contribuyente_especial"/>
-        <field name="contribuyente_especial"/>
-        <newline/> 
-    </xpath>
-    <xpath
-        expr="/form/notebook/page[@id='accounting']/field[@name='contribuyente_especial']"
-        position="after">
-        <newline/> 
-        <label name="contribuyente_especial_nro"/>
-        <field name="contribuyente_especial_nro"/>
-        <newline/> 
-    </xpath>
-    <xpath
         expr="/form/notebook/page[@id='general']/field[@name='contact_mechanisms']"
         position="replace">
         

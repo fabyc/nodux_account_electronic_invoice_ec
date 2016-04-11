@@ -22,23 +22,6 @@ DEPENDS = ['active']
 class Party:
     __name__ = 'party.party'
     
-    mandatory_accounting = fields.Selection([
-            ('SI', 'Si'),
-            ('NO', 'No'),
-            ], 'Mandatory Accounting', states={
-                'required': ~Eval('active',True),
-                'invisible': Eval('type_document')!='04',
-            }
-            )  
-    contribuyente_especial = fields.Boolean(u'Contribuyente especial', states={
-            'invisible': Eval('mandatory_accounting') != 'SI',
-            }, help="Seleccione solo si es contribuyente especial"
-        )        
-    contribuyente_especial_nro = fields.Char('Nro. Resolucion', states={
-            'invisible': ~Eval('contribuyente_especial',True),
-            'required': Eval('contribuyente_especial',True),
-            }, help="Contribuyente Especial Nro.")
-    commercial_name = fields.Char('Commercial Name')
     contact_mechanisms2 = fields.One2Many('party.contact_mechanism', 'party',
         'Contact Mechanisms', states=STATES, depends=DEPENDS, help = u'Requerido ingresar un correo electronico')
     
@@ -48,14 +31,6 @@ class Party:
         cls._error_messages.update({
                 'invalid_contact': (u'Es requerido ingresar un correo, para el envio de comprobantes electronicos'),
                 'invalid_structure':('Correo electronico no cumple con la estructura (ejemplo@mail.com)')})
-
-    @staticmethod
-    def default_contribuyente_especial():
-        return False
-        
-    @staticmethod
-    def default_mandatory_accounting():
-        return 'NO'
 
     @classmethod
     def validate(cls, parties):

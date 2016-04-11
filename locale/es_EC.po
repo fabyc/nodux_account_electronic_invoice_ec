@@ -167,10 +167,6 @@ msgctxt "field:nodux.account.electronic.invoice.ec.lote.start,id:"
 msgid "ID"
 msgstr "ID"
 
-msgctxt "field:party.party,commercial_name:"
-msgid "Commercial Name"
-msgstr "Nombre Comercial"
-
 msgctxt "field:party.party,contact_mechanisms2:"
 msgid "Contact Mechanisms"
 msgstr "Medios de Contacto"

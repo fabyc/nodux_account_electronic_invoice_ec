@@ -4,22 +4,11 @@ this repository contains the full copyright notices and license terms. -->
 <tryton>
     <data>
         
-        <record model="ir.ui.view" id="party_view_tree">
-            <field name="model">party.party</field>
-            <field name="inherit" ref="party.party_view_tree"/>
-            <field name="name">party_tree</field>
-        </record>
-
         <record model="ir.ui.view" id="party_view_form">
             <field name="model">party.party</field>
             <field name="inherit" ref="party.party_view_form"/>
             <field name="name">party_form</field>
         </record>
         
-        <record model="ir.action.keyword" id="check_vies_keyword">
-            <field name="keyword">form_action</field>
-            <field name="model">party.party,-1</field>  <!-- Que vista de modelo aparece -->
-            <field name="action" ref="party.wizard_check_vies"/>
-        </record>
     </data>
 </tryton>
