@@ -129,7 +129,6 @@ class Invoice():
         res['number_w'] = self.number
         res['ambiente'] = self.invoice_date
         
-        print "El numero ",self.number
         for field in ('description', 'comment'):
             res[field] = getattr(self, field)
 
@@ -164,7 +163,6 @@ class Invoice():
         Invoice = pool.get('account.invoice')
         
         invoice = Invoice.search([('type','=', 'out_invoice'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
-        print "invoice ", invoice
         credit = Invoice.search([('type','=', 'out_credit_note'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
         withholding = Invoice.search([('type','=', 'in_withholding'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
         debit = Invoice.search([('type','=', 'out_debit_note'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
@@ -245,8 +243,6 @@ class Invoice():
         conexion = conexions.search([('id', '=', 1)])
         if conexion:
             for c in conexion:
-                print "Si hay c y conexion ", c, conexion
-                print "La cabecera ",c.cabecera
                 if c.direccion:
                     address = c.cabecera+"://"+base64.decodestring(c.usuario)+":"+base64.decodestring(c.pass_db)+"@"+c.direccion+":"+c.puerto+"/"+base64.decodestring(c.name_db)
                     return address
@@ -292,7 +288,6 @@ class Invoice():
         
         cur.execute("SELECT * FROM user_id_seq;")
         sequence = cur.fetchone()
-        print sequence
         if sequence:
             pass
         else:
@@ -348,7 +343,6 @@ class Invoice():
             for l in lines:
                 if i.move == l.move:
                     total_ventas_paid = total_ventas_paid + l.debit 
-                    print total_ventas_paid   
                                      
         for i2 in invoices_posted:
             for l2 in lines:
@@ -491,8 +485,6 @@ class Invoice():
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
             etree.SubElement(impuesto, 'codigoPorcentaje').text = codigoPorcentaje
-            print "el producto", line.product
-            print "Taxes 1, taxes 2, taxes 3", taxes1, taxes2, taxes3
             if taxes1:
                 for t in taxes1:
                     
@@ -639,14 +631,12 @@ class Invoice():
             
             factura1 = self.generate_xml_invoice()
             factura = etree.tostring(factura1, encoding = 'utf8', method = 'xml')
-            print etree.tostring(factura1, pretty_print = True, xml_declaration=True, encoding="utf-8")
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(factura, 'out_invoice', {})
             if a:
                 self.raise_user_error(a)
             file_pk12 = base64.encodestring(nuevaruta+'/'+name_c)
             password = self.company.password_pk12
             signed_document = s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
-            #print signed_document
             #envio al sri para recepcion del comprobante electronico
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
             if result != True:
@@ -697,7 +687,6 @@ class Invoice():
             
                 # XML del comprobante electronico: nota de credito
                 notaCredito1 = self.generate_xml_credit_note()
-                print etree.tostring(notaCredito1, pretty_print = True, xml_declaration=True, encoding="utf-8")
                 notaCredito = etree.tostring(notaCredito1, encoding = 'utf8', method = 'xml')
                 a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(notaCredito, 'out_credit_note', {})
                 if a:
@@ -991,8 +980,6 @@ class Invoice():
             impuestos = etree.Element('impuestos')
             impuesto = etree.Element('impuesto')
             etree.SubElement(impuesto, 'codigo').text = "2"
-            print "La tarifa ",line.product.iva_tarifa
-            print "Depende de la categoria ", line.product.iva_category
             
             if line.product.iva_category == True:
                 codigoPorcentaje = line.product.category.iva_tarifa
@@ -1001,7 +988,6 @@ class Invoice():
             taxes1= Taxes1.search([('category','=', line.product.category)])
             taxes2 = Taxes2.search([('product','=', line.product)])
             taxes3 = Taxes2.search([('product','=', line.product.template)])
-            print "el producto", line.product
             etree.SubElement(impuesto, 'codigoPorcentaje').text = codigoPorcentaje
                 
             if taxes1:
@@ -1043,7 +1029,6 @@ class Invoice():
         #generar detalles
         detalles = self.get_detail_credit_note()
         notaCredito.append(detalles)
-        print etree.tostring(notaCredito,pretty_print=True ,xml_declaration=True, encoding="utf-8")
         return notaCredito
 
     #withholding (comprobante de retencion)
@@ -1119,7 +1104,6 @@ class Invoice():
         #for obj in self.browse(self.id):
             # Codigo de acceso
         if not self.type in ['in_withholding']:
-            print "no disponible para otros documentos"
             pass
         # Validar que el envio del comprobante electronico se realice dentro de las 24 horas posteriores a su emision
         pool = Pool()
@@ -1152,7 +1136,6 @@ class Invoice():
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
-            print usuario, password_u
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -1308,7 +1291,6 @@ class Invoice():
         #for obj in self.browse(self.id):
             # Codigo de acceso
         if not self.type in [ 'out_debit_note']:
-            print "no disponible para otros documentos"
             pass
         pool = Pool()
         Date = pool.get('ir.date')       
@@ -1344,7 +1326,6 @@ class Invoice():
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
-            print usuario, password_u
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -1360,7 +1341,6 @@ class Invoice():
             os.remove(name_c)
             # XML del comprobante electronico: factura
             notaDebito1 = self.generate_xml_debit_note()
-            print etree.tostring(notaDebito1,pretty_print=True ,xml_declaration=True, encoding="utf-8")
             notaDebito = etree.tostring(notaDebito1, encoding = 'utf8', method = 'xml')
             #validacion del xml (llama metodo validate xml de sri)
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(notaDebito, 'out_debit_note', {})
@@ -1425,21 +1405,17 @@ class Invoice():
             
         Invoice = pool.get('account.invoice')
         invoices = Invoice.browse(Transaction().context['active_ids'])
-        print invoices
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
         etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
-            print "Factura ",invoice
             factura1 = invoice.generate_xml_invoice()
             factura = etree.tostring(factura1, encoding = 'utf8', method = 'xml')
-            #print etree.tostring(factura1, pretty_print = True, xml_declaration=True, encoding="utf-8")
             signed_document = s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
             etree.SubElement(comprobantes, 'comprobante').text = etree.CDATA(signed_document)
         lote.append(comprobantes)
-        print etree.tostring(lote,pretty_print=True ,xml_declaration=True, encoding="utf-8")
         return lote
                
     def action_generate_lote(self):
@@ -1453,7 +1429,6 @@ class Invoice():
         MESSAGE_TIME_LIMIT = u'Se ha excedido el límite de tiempo. Los comprobantes electrónicos deben ser enviados al SRI para su autorización, en un plazo máximo de 24 horas'
         
         if not self.type in ['out_invoice']:
-            print "no disponible para otros documentos"
             pass
         usuario = self.company.user_ws
         password_u= self.company.password_ws
@@ -1474,7 +1449,6 @@ class Invoice():
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
-            print usuario, password_u
             authenticate, send_m = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -1487,7 +1461,6 @@ class Invoice():
             # XML del comprobante electronico: factura
             lote1 = self.generate_xml_lote()
             lote = etree.tostring(lote1, encoding = 'utf8', method ='xml') 
-            print etree.tostring(lote1, pretty_print = True, xml_declaration=True, encoding="utf-8")
             #validacion del xml (llama metodo validate xml de sri)
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(lote, 'lote', {})
             if a:
@@ -1549,7 +1522,6 @@ class Invoice():
             
         Invoice = pool.get('account.invoice')
         invoices = Invoice.browse(Transaction().context['active_ids'])
-        print invoices
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
@@ -1589,7 +1561,6 @@ class Invoice():
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
-            print usuario, password_u
             authenticate, send_m = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -1628,7 +1599,6 @@ class Invoice():
             # XML del comprobante electronico: factura
             lote1 = self.generate_xml_lote()
             lote = etree.tostring(lote1, encoding = 'utf8', method ='xml') 
-            print etree.tostring(lote1, pretty_print = True, xml_declaration=True, encoding="utf-8")
             #validacion del xml (llama metodo validate xml de sri)
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(lote, 'lote', {})
             if a:
@@ -1723,7 +1693,6 @@ class Invoice():
             signed_document = xades.apply_digital_signature(notaCredito, file_pk12, password)
             etree.SubElement(comprobantes, 'comprobante').text = etree.CDATA(signed_document)
         lote.append(comprobantes)
-        print etree.tostring(lote,pretty_print=True ,xml_declaration=True, encoding="utf-8")
         return lote
         
     def action_generate_lote_credit(self):
@@ -1738,7 +1707,6 @@ class Invoice():
         #validacion del xml (llama metodo validate xml de sri)
         inv_xml = DocumentXML(lote, 'lote')
         inv_xml.validate_xml()
-        print etree.tostring(lote,pretty_print=True ,xml_declaration=True, encoding="utf-8")
         # solicitud de autorizacion del comprobante electronico
         xmlstr = etree.tostring(lote, encoding='utf8', method='xml')            
         inv_xml.send_receipt(xmlstr)
