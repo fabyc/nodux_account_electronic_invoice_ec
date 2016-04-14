@@ -9,7 +9,7 @@
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-#import MySQLdb
+from trytond.rpc import RPC
 import datetime
 import psycopg2
 import collections
@@ -30,8 +30,6 @@ from xml.dom.minidom import parse, parseString
 from socket import error as SocketError
 import xml.etree.cElementTree as ET
 import time
-#from trytond.modules.electronic.conexiones import SriService, DocumentXML
-#from trytond.modules.electronic.xadesBes import Xades
 import code128
 import xml.etree.ElementTree
 import smtplib, os
@@ -44,13 +42,6 @@ from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 import xmlrpclib
 import shutil
-#from jsonrpclib import Server as ServerProxy
-#try:
-#    from suds.client import Client
-#    from suds.transport import TransportError
-#except ImportError:
-#    raise ImportError('Instalar Libreria suds')
-    
 __all__ = ['Invoice', 'SendSriLoteStart', 'SendSriLote','InvoiceReport']
 __metaclass__ = PoolMeta
 
@@ -160,13 +151,48 @@ class Invoice():
     @classmethod
     def __setup__(cls):
         super(Invoice, cls).__setup__()
-        
         cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
                 'invoice_report_cache', 'invoice_report_format']
+        
     @staticmethod
     def default_lote():
         return True
-            
+    
+    @classmethod
+    def count_invoice(cls, party, start_p_start, end_p_start, start_p_end, end_p_end):
+        pool = Pool()
+        Invoice = pool.get('account.invoice')
+        
+        invoice = Invoice.search([('type','=', 'out_invoice'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
+        print "invoice ", invoice
+        credit = Invoice.search([('type','=', 'out_credit_note'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
+        withholding = Invoice.search([('type','=', 'in_withholding'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
+        debit = Invoice.search([('type','=', 'out_debit_note'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
+        number_invoice = 0
+        number_credit = 0
+        number_debit = 0
+        number_withholding = 0
+        number_shipment = 0
+        
+        if Invoice:
+            for i in invoice:
+                if i.invoice_date >= start_p_start and i.invoice_date<=end_p_start:
+                    number_invoice = number_invoice +1
+            for c in credit:
+                number_credit = number_credit +1
+            for w in withholding:
+                number_withholding = number_withholding +1
+            for d in debit:
+                number_debit = number_debit +1
+            """
+            for s in shipment:
+                number_shipment = number_shipment +1
+            """
+        total_voucher= number_invoice + number_credit +number_withholding+number_debit + number_shipment
+        
+        return (number_invoice, number_credit, number_debit, number_withholding, number_shipment)
+        
+        
     @classmethod
     @ModelView.button
     @Workflow.transition('posted')
@@ -219,12 +245,15 @@ class Invoice():
         conexion = conexions.search([('id', '=', 1)])
         if conexion:
             for c in conexion:
-                address = c.cabecera+"://"+base64.decodestring(c.usuario)+":"+base64.decodestring(c.pass_db)+"@"+c.direccion+":"+c.puerto+"/"+base64.decodestring(c.name_db)
-                return address
-        else:
-             
-            self.raise_user_error(CONEXION)
-        
+                print "Si hay c y conexion ", c, conexion
+                print "La cabecera ",c.cabecera
+                if c.direccion:
+                    address = c.cabecera+"://"+base64.decodestring(c.usuario)+":"+base64.decodestring(c.pass_db)+"@"+c.direccion+":"+c.puerto+"/"+base64.decodestring(c.name_db)
+                    return address
+                else:
+                     
+                    self.raise_user_error(CONEXION)
+                
         
     def connect_db(self):
         pool = Pool()
@@ -265,10 +294,8 @@ class Invoice():
         sequence = cur.fetchone()
         print sequence
         if sequence:
-            print "Ya existe no se ha creado"
             pass
         else:
-            print "Tambien sta entrando"
             cur.execute("CREATE SEQUENCE user_id_seq;")
             
         cur.execute("CREATE TABLE IF NOT EXISTS usuario_web (id integer DEFAULT  NEXTVAL('user_id_seq') NOT  NULL, username varchar, password varchar, cedula varchar, correo varchar, nombre varchar, token varchar, fecha varchar, primary key (id))")
@@ -433,7 +460,7 @@ class Invoice():
             pool = Pool()
             Taxes1 = pool.get('product.category-customer-account.tax')
             Taxes2 = pool.get('product.template-customer-account.tax')
-            
+
             detalle = etree.Element('detalle')
             etree.SubElement(detalle, 'codigoPrincipal').text = fix_chars(line.product.code)
             etree.SubElement(detalle, 'descripcion').text = fix_chars(line.product.name)
@@ -450,11 +477,22 @@ class Invoice():
             else:
                 codigoPorcentaje = line.product.iva_tarifa
             
-            taxes1= Taxes1.search([('category','=', line.product.category)])
-            taxes2 = Taxes2.search([('product','=', line.product)])
-            taxes3 = Taxes2.search([('product','=', line.product.template)])
-            print "el producto", line.product
+            if line.product.taxes_category == True:
+                if line.product.category.taxes_parent == True:
+                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes2 = Taxes2.search([('product','=', line.product)])
+                    taxes3 = Taxes2.search([('product','=', line.product.template)])
+                else:
+                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes2 = Taxes2.search([('product','=', line.product)])
+                    taxes3 = Taxes2.search([('product','=', line.product.template)])
+            else:
+                taxes1= Taxes1.search([('category','=', line.product.category)])
+                taxes2 = Taxes2.search([('product','=', line.product)])
+                taxes3 = Taxes2.search([('product','=', line.product.template)])
             etree.SubElement(impuesto, 'codigoPorcentaje').text = codigoPorcentaje
+            print "el producto", line.product
+            print "Taxes 1, taxes 2, taxes 3", taxes1, taxes2, taxes3
             if taxes1:
                 for t in taxes1:
                     
@@ -583,6 +621,7 @@ class Invoice():
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
+            
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -697,7 +736,8 @@ class Invoice():
         year = str(ahora.year)
         client = self.party.name
         client = client.upper()
-        empresa_=empresa.upper()
+        empresa_ = empresa.replace('_',' ')
+        empresa_=empresa_.upper()
         if ahora.month < 10:
             month = '0'+ str(ahora.month)
         else:
@@ -744,10 +784,12 @@ class Invoice():
         pdf = MIMEApplication(open(name_pdf,"rb").read())
         pdf.add_header('Content-Disposition', 'attachment', filename=name_pdf)
         email=''
+        cont = 0
         for c in correo:
             if c.party == self.party:
                 email = c.value
             if c.party == self.company.party:
+                cont = cont +1 
                 f_e = c.value
             
         if email != '':
@@ -793,8 +835,9 @@ class Invoice():
                      <td>
                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
                      <tr>
-                    <td align="center" bgcolor="#C61F34" style="color: #ffffff; font-family: Verdana, sans-serif; font-size: 20px; padding: 40px 0 30px 0; border-radius: 5px;">
-                     <img src="sftp://192.168.1.45/home/noduxdev/.noduxenvs/nodux34devpymes/server/trytond/modules/nodux_account_electronic_invoice_ec/img/logo.png" alt="Comprobantes Electrónicos" width="50" height="50" style="display: block;"/>Sistema Experto en Gestión Empresarial
+                    <td align="center" bgcolor="#C61F34" style="color: #ffffff; font-family: Verdana, sans-serif; font-size: 20px; padding: 40px 0 30px 0; border-radius: 5px;">NODUX 
+                    <p>
+                    Sistema Experto en Gestión Empresarial
                     </td>
                      </tr>
                      <tr>
@@ -827,21 +870,19 @@ class Invoice():
                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
                      <tr>
                     <td style="color: #ffffff; font-family: Arial, sans-serif; font-size: 14px;">
-                     &reg; Nodux.Cía.Ltda 2016<br/>
+                     &reg; Nodux. Cía. Ltda. 2016<br/>
                     </td>
                     <td>
                      <td align="right" width "25%" style="color: #153643; font-family: Arial, sans-serif; font-size: 13px; line-height: 20px;">
                      <table border="0" cellpadding="0" cellspacing="0">
                     <tr>
                      <td style="color: #ffffff; font-family: Arial, sans-serif; font-size: 13px; line-height: 20px;">
-                      <a href="http://www.twitter.com/">
-                       <img src= "sftp://192.168.1.45/home/noduxdev/.noduxenvs/nodux34devpymes/server/trytond/modules/nodux_account_electronic_invoice_ec/img/twitter.svg" alt="Twitter" width="38" height="38" style="display: block;" border="0" />
+                      <a href="www.twitter.com/noduxEC"> Twitter
                       </a>
                      </td>
                      <td style="font-size: 0; line-height: 0;" width="20">&nbsp;</td>
                      <td>
-                      <a href="https://www.facebook.com/nodux/info?tab=overview">
-                       <img src= "sftp://192.168.1.45/home/noduxdev/.noduxenvs/nodux34devpymes/server/trytond/modules/nodux_account_electronic_invoice_ec/img/facebook.svg" alt="Facebook" width="38" height="38" style="display: block;" border="0" />
+                      <a href="www.facebook.com/nodux/info?tab=overview"> Facebook
                       </a>
                      </td>
                     </tr>
@@ -1811,7 +1852,7 @@ class InvoiceReport(Report):
         user = User(Transaction().user)
         localcontext['company'] = user.company
         localcontext['vat_number'] = cls._get_vat_number(user.company)
-        #localcontext['barcode_img']=cls._get_barcode_img(Invoice, invoice)
+        localcontext['barcode_img']=cls._get_barcode_img(Invoice, invoice)
         localcontext['vat_number_cliente'] = cls._get_vat_number_cliente(Invoice, invoice)
         localcontext['subtotal_12'] = cls._get_subtotal_12(Invoice, invoice)
         localcontext['subtotal_0'] = cls._get_subtotal_0(Invoice, invoice)
@@ -1852,8 +1893,8 @@ class InvoiceReport(Report):
         
     @classmethod
     def _get_subtotal_12(cls, Invoice, invoice):
-        subtotal0 = 0.00
-        subtotal12 = 0.00
+        subtotal0 = Decimal(0.00)
+        subtotal12 = Decimal(0.00)
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
@@ -1904,7 +1945,7 @@ class InvoiceReport(Report):
             elif taxes3:
                 for t in taxes3:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '0':
-                        subtotal12= subtotal12 + (line.amount)
+                        subtotal0= subtotal0 + (line.amount)
                         
         return subtotal0
     
