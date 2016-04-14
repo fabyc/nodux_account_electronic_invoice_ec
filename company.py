@@ -9,11 +9,6 @@ from trytond.pool import Pool, PoolMeta
 import hashlib
 import base64
 
-try:
-    import bcrypt
-except ImportError:
-    bcrypt = None
-
 __all__ = ['Company']
 
 __metaclass__ = PoolMeta
@@ -30,18 +25,16 @@ class Company(ModelSQL, ModelView):
            ('2', 'Produccion'),
        ], 'Tipo de Ambiente')
      
-    password_ws = fields.Char('Password WS', help=u'Ingrese la contraseña que le fue emitido por la empresa', required=True)
-    user_ws = fields.Char('Usuario WS', help='Ingrese el usuario que le fue emitido por la empresa', required=True)
+    password_ws = fields.Char('Password WS', help=u'Ingrese la contraseña que le fue emitido por NODUX', required = True)
+    user_ws = fields.Char('Usuario WS', help='Ingrese el usuario que le fue emitido por NODUX', required = True)
     file_pk12 = fields.Binary('Archivo de firma digital', help = 'Cargue el archivo de la firma digital .pk12',required = True)
-    password_pk12 = fields.Char('Password de la Firma Digital', help=u'Contraseña de la firma digital', required=True)
+    password_pk12 = fields.Char('Password de la Firma Digital', help=u'Contraseña de la firma digital',required = True)
     logo = fields.Binary('Logo de su empresa', help='Logo para RIDE de sus facturas', required = True)
 
     password = fields.Function(fields.Char('Password WS'), getter='get_password', setter='set_password')
     user = fields.Function(fields.Char('Usuario WS'), getter='get_user', setter='set_user')
     pass_pk12 = fields.Function(fields.Char('Password de la firma digital'), getter='get_pk12p', setter='set_pk12p')         
              
-    #password = fields.Function(fields.Char('Password'), getter='get_password', 
-     #   setter='set_password')
     @classmethod
     def __setup__(cls):
         super(Company, cls).__setup__()
@@ -74,6 +67,7 @@ class Company(ModelSQL, ModelView):
     
     @classmethod
     def set_user(cls, companys, name, value):
+        print "Si ingresa"
         if value == 'x' * 10:
             return
         to_write = []
@@ -85,7 +79,7 @@ class Company(ModelSQL, ModelView):
         
     def get_pk12p(self, name):
         return 'x' * 10
-    
+
     @classmethod
     def set_pk12p(cls, companys, name, value):
         if value == 'x' * 10:
