@@ -340,7 +340,7 @@ class Invoice():
         number = self.number
         #auth = self.journal_id.auth_id
         infoTributaria = etree.Element('infoTributaria')
-        etree.SubElement(infoTributaria, 'ambiente').text = '1'
+        etree.SubElement(infoTributaria, 'ambiente').text = '2'
         #proxy.SriService.get_active_env()
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
         etree.SubElement(infoTributaria, 'razonSocial').text = self.company.party.name
