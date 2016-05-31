@@ -13,8 +13,6 @@ __metaclass__ = PoolMeta
 
 _TARIFA = [
     ('', ''),
-    ('0', 'IVA 0%'),
-    ('2', 'IVA 12 %'),
     ('6', 'No objeto de Impuesto'),
     ('7', 'Exento de IVA'),
 ]
@@ -47,7 +45,7 @@ class MissingFunction(fields.Function):
 class Category:
     __name__ = 'product.category'
         
-    iva_parent = fields.Boolean('Usar el tipo de impuesto del padre', help='Usar el tipo de impuesto definido en el padre')
+    iva_parent = fields.Boolean('Usar tarifa del padre', help='Usar el tipo de tarifa definido en el padre')
 
     ice = fields.Boolean('Aplica Impuesto a los Consumos Especiales (ICE)',
         help='Seleccione en caso que el producto aplique a Impuesto a los Consumos Especiales(ICE)',states={
@@ -99,8 +97,8 @@ class Category:
 
 class Template:
     __name__ = 'product.template'
-    iva_category = fields.Boolean('Usar el tipo de impuesto de la categoria',
-        help='Usar el tipo de impuesto definido en la categoria')
+    iva_category = fields.Boolean('Usar tarifa de la categoria',
+        help='Usar el tipo de tarifa definido en la categoria')
         
     ice = fields.Boolean('Aplica Impuesto a los Consumos Especiales (ICE)',
         help='Seleccione en caso que el producto aplique a Impuesto a los Consumos Especiales(ICE)',states={
