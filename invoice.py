@@ -443,7 +443,7 @@ class Invoice():
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes1= Taxes1.search([('category','=', line.product.category)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
@@ -532,7 +532,7 @@ class Invoice():
         t_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
         #t_amb=proxy.SriService.get_active_env()
-        t_amb="1"
+        t_amb="2"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
@@ -599,10 +599,10 @@ class Invoice():
         address_xml = self.web_service()
         s= xmlrpclib.ServerProxy(address_xml)
         if self.type == 'out_invoice':
-            name = self.company.party.name
-            name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-            name_l=name_r.lower()
-            name_c = name_l+'.p12'
+            name = self.company.party.name            
+            name_l=name.lower()
+            name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_c = name_r+'.p12'
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -667,12 +667,11 @@ class Invoice():
 
         else:
             if self.type == 'out_credit_note':
-
-
                 name = self.company.party.name
-                name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-                name_l=name_r.lower()
-                name_c = name_l+'.p12'
+                name_l=name.lower()
+                name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+                name_c = name_r+'.p12'
+            
                 if self.company.file_pk12:
                     archivo = self.company.file_pk12
                 else :
@@ -783,7 +782,7 @@ class Invoice():
         correo = correos.search([('type','=','email')])
         InvoiceReport = Pool().get('account.invoice', type='report')
         report = InvoiceReport.execute([self.id], {})
-        xml_elememt = xml_element.replace('><', '>\n<')
+        xml_elememt = xml_element.replace('><', '>\n<').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u').replace(u'Á','A').replace(u'É','E').replace(u'Í', 'I').replace(u'Ó','O').replace(u'Ú','U')..replace(u'Ñ', 'n').replace(u'ñ', 'n')
         email=''
         cont = 0
         for c in correo:
@@ -804,7 +803,8 @@ class Invoice():
             from_email = "nodux.ec@gmail.com"
         name = access_key + ".xml"
         reporte = xmlrpclib.Binary(report[1])
-        xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<'))
+        xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u').replace(u'Á','A').replace(u'É','E').replace(u'Í', 'I').replace(u'Ó','O').replace(u'Ú','U')..replace(u'Ñ', 'n').replace(u'ñ', 'n'))
+        
         save_files = s.model.nodux_electronic_invoice_auth.conexiones.save_file(empresa, name_pdf, name_xml, reporte, xml,{})
         p_xml = nuevaruta + name_xml
         p_pdf = nuevaruta + name_pdf
@@ -906,7 +906,7 @@ class Invoice():
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes1= Taxes1.search([('category','=', line.product.category)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
@@ -1084,9 +1084,10 @@ class Invoice():
 
         if self.type == 'in_withholding':
             name = self.company.party.name
-            name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-            name_l=name_r.lower()
-            name_c = name_l+'.p12'
+            name_l=name.lower()
+            name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_c = name_r+'.p12'
+            
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1274,9 +1275,10 @@ class Invoice():
 
         if self.type == 'out_debit_note':
             name = self.company.party.name
-            name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-            name_l=name_r.lower()
-            name_c = name_l+'.p12'
+            name_l = name.lower()
+            name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_c = name_r+'.p12'
+            
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1338,9 +1340,10 @@ class Invoice():
         address_xml = self.web_service()
         s= xmlrpclib.ServerProxy(address_xml)
         name = self.company.party.name
-        name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-        name_l=name_r.lower()
-        name_c = name_l+'.p12'
+        name_l = name.lower()
+        name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+        name_c = name_r+'.p12'
+            
         if self.company.file_pk12:
             archivo = self.company.file_pk12
         else :
@@ -1397,9 +1400,10 @@ class Invoice():
 
         if self.type == 'out_invoice':
             name = self.company.party.name
-            name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-            name_l=name_r.lower()
-            name_c = name_l+'.p12'
+            name_l=name.lower()
+            name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_c = name_r+'.p12'
+            
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1455,9 +1459,9 @@ class Invoice():
         address_xml = self.web_service()
         s= xmlrpclib.ServerProxy(address_xml)
         name = self.company.party.name
-        name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-        name_l=name_r.lower()
-        name_c = name_l+'.p12'
+        name_l=name.lower()
+        name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+        name_c = name_r+'.p12'
         if self.company.file_pk12:
             archivo = self.company.file_pk12
         else :
@@ -1509,9 +1513,10 @@ class Invoice():
 
         if self.type == 'in_withholding':
             name = self.company.party.name
-            name_r = name.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-            name_l=name_r.lower()
-            name_c = name_l+'.p12'
+            name_l=name.lower()
+            name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_c = name_r+'.p12'
+            
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1690,7 +1695,7 @@ class Invoice():
         fecha = time.strftime('%d%m%Y')
         tipo_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
-        tipo_amb="1"
+        tipo_amb="2"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
@@ -1876,7 +1881,7 @@ class InvoiceReport(Report):
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes1= Taxes1.search([('category','=', line.product.category)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
@@ -1911,7 +1916,7 @@ class InvoiceReport(Report):
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes1= Taxes1.search([('category','=', line.product.category)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
@@ -1948,7 +1953,7 @@ class InvoiceReport(Report):
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                    taxes1= Taxes1.search([('category','=', line.product.category)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
