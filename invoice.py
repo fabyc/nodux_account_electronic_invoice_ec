@@ -43,6 +43,8 @@ from email import Encoders
 import xmlrpclib
 import shutil
 import os.path
+import unicodedata
+
 __all__ = ['Invoice', 'SendSriLoteStart', 'SendSriLote','InvoiceReport']
 __metaclass__ = PoolMeta
 
@@ -340,7 +342,7 @@ class Invoice():
         number = self.number
         #auth = self.journal_id.auth_id
         infoTributaria = etree.Element('infoTributaria')
-        etree.SubElement(infoTributaria, 'ambiente').text = '2'
+        etree.SubElement(infoTributaria, 'ambiente').text = '1'
         #proxy.SriService.get_active_env()
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
         etree.SubElement(infoTributaria, 'razonSocial').text = self.company.party.name
@@ -411,6 +413,7 @@ class Invoice():
         def fix_chars(code):
             if code:
                 code.replace(u'%',' ').replace(u'º', ' ').replace(u'Ñ', 'N').replace(u'ñ','n')
+                code = ''.join((c for c in unicodedata.normalize('NFD', code) if unicodedata.category(c) != 'Mn'))
                 return code
             return '1'
 
@@ -532,7 +535,7 @@ class Invoice():
         t_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
         #t_amb=proxy.SriService.get_active_env()
-        t_amb="2"
+        t_amb="1"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
@@ -645,7 +648,11 @@ class Invoice():
             signed_document= s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
 
             #envio al sri para recepcion del comprobante electronico
+            """
             print "Signed document ", signed_document
+            signed_document = self.elimina_tildes(signed_document)
+            print "Sin tildes para enviar", signed_document
+            """
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
             if result != True:
                 self.raise_user_error(result)
@@ -734,18 +741,23 @@ class Invoice():
                 self.send_mail_invoice(doc_xml,access_key, send_m, s)
         return access_key
 
+    def elimina_tildes(self,s):
+        return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
+        
     def send_mail_invoice(self, xml_element, access_key, send_m, s, server="localhost"):
         MAIL= u"Ud no ha configurado el correo del cliente. Diríjase a: \nTerceros->General->Medios de Contacto"
         pool = Pool()
-        empresa = self.company.party.name
-        empresa = empresa.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+        empresa = self.elimina_tildes(self.company.party.name)
+        #empresa = unicode(empresa, 'utf-8')
+        empresa = str(self.elimina_tildes(empresa))
+        empresa = empresa.replace(' ','_')
         empresa = empresa.lower()
+        
         ahora = datetime.datetime.now()
         year = str(ahora.year)
         client = self.party.name
         client = client.upper()
-        empresa_ = empresa.replace('_',' ')
-        empresa_=empresa_.upper()
+        empresa_ = self.company.party.name
         ruc = self.company.party.vat_number
         if ahora.month < 10:
             month = '0'+ str(ahora.month)
@@ -782,7 +794,7 @@ class Invoice():
         correo = correos.search([('type','=','email')])
         InvoiceReport = Pool().get('account.invoice', type='report')
         report = InvoiceReport.execute([self.id], {})
-        xml_elememt = xml_element.replace('><', '>\n<').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u').replace(u'Á','A').replace(u'É','E').replace(u'Í', 'I').replace(u'Ó','O').replace(u'Ú','U')..replace(u'Ñ', 'n').replace(u'ñ', 'n')
+
         email=''
         cont = 0
         for c in correo:
@@ -803,7 +815,9 @@ class Invoice():
             from_email = "nodux.ec@gmail.com"
         name = access_key + ".xml"
         reporte = xmlrpclib.Binary(report[1])
-        xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u').replace(u'Á','A').replace(u'É','E').replace(u'Í', 'I').replace(u'Ó','O').replace(u'Ú','U')..replace(u'Ñ', 'n').replace(u'ñ', 'n'))
+        xml_element = unicode(xml_element, 'utf-8')
+        xml_element = self.elimina_tildes(xml_element)
+        xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<'))
         
         save_files = s.model.nodux_electronic_invoice_auth.conexiones.save_file(empresa, name_pdf, name_xml, reporte, xml,{})
         p_xml = nuevaruta + name_xml
@@ -811,7 +825,8 @@ class Invoice():
         s.model.nodux_electronic_invoice_auth.conexiones.send_mail(name_pdf, name, p_xml, p_pdf, from_email, to_email, n_tipo, num_fac, client, empresa_, ruc, {})
 
         return True
-
+    
+    
 
     def get_credit_note_element(self):
 
@@ -876,6 +891,8 @@ class Invoice():
         def fix_chars(code):
             if code:
                 code.replace(u'%',' ').replace(u'º',' ').replace(u'Ñ', 'N').replace(u'ñ','n')
+                code = ''.join((c for c in unicodedata.normalize('NFD', code) if unicodedata.category(c) != 'Mn'))
+                
                 return code
             return '1'
         detalles = etree.Element('detalles')
@@ -1206,6 +1223,7 @@ class Invoice():
         def fix_chars(code):
             if code:
                 code.replace(u'%',' ').replace(u'º',' ').replace(u'Ñ', 'N').replace(u'ñ','n')
+                code = ''.join((c for c in unicodedata.normalize('NFD', code) if unicodedata.category(c) != 'Mn'))
                 return code
             return '1'
 
@@ -1462,6 +1480,7 @@ class Invoice():
         name_l=name.lower()
         name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
+
         if self.company.file_pk12:
             archivo = self.company.file_pk12
         else :
@@ -1695,7 +1714,7 @@ class Invoice():
         fecha = time.strftime('%d%m%Y')
         tipo_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
-        tipo_amb="2"
+        tipo_amb="1"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
