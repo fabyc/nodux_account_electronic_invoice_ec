@@ -371,7 +371,10 @@ class Invoice():
             etree.SubElement(infoFactura, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
         else :
             etree.SubElement(infoFactura, 'obligadoContabilidad').text = 'NO'
-        etree.SubElement(infoFactura, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        if self.party.type_document:
+            etree.SubElement(infoFactura, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        else:
+            self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         etree.SubElement(infoFactura, 'razonSocialComprador').text = self.party.name
         etree.SubElement(infoFactura, 'identificacionComprador').text = self.party.vat_number
         etree.SubElement(infoFactura, 'totalSinImpuestos').text = '%.2f' % (self.untaxed_amount)
@@ -474,10 +477,10 @@ class Invoice():
                     if str('{:.0f}'.format(t.tax.rate*100)) == '12':
                         codigoPorcentaje = '2'
                         codigo = '2'
-                    if str('{:.0f}'.format(tax.tax.rate*100)) == '0':
+                    if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         codigoPorcentaje = '0'
                         codigo = '2'
-                    if str('{:.0f}'.format(tax.tax.rate*100)) == '14':
+                    if str('{:.0f}'.format(t.tax.rate*100)) == '14':
                         codigoPorcentaje = '3'
                         codigo = '2'
                     if tax.tax.rate == None:
@@ -492,10 +495,10 @@ class Invoice():
                     if str('{:.0f}'.format(t.tax.rate*100)) == '12':
                         codigoPorcentaje = '2'
                         codigo = '2'
-                    if str('{:.0f}'.format(tax.tax.rate*100)) == '0':
+                    if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         codigoPorcentaje = '0'
                         codigo = '2'
-                    if str('{:.0f}'.format(tax.tax.rate*100)) == '14':
+                    if str('{:.0f}'.format(t.tax.rate*100)) == '14':
                         codigoPorcentaje = '3'
                         codigo = '2'
                     if tax.tax.rate == None:
@@ -602,7 +605,7 @@ class Invoice():
         address_xml = self.web_service()
         s= xmlrpclib.ServerProxy(address_xml)
         if self.type == 'out_invoice':
-            name = self.company.party.name            
+            name = self.company.party.name
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
@@ -678,7 +681,7 @@ class Invoice():
                 name_l=name.lower()
                 name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
                 name_c = name_r+'.p12'
-            
+
                 if self.company.file_pk12:
                     archivo = self.company.file_pk12
                 else :
@@ -743,7 +746,7 @@ class Invoice():
 
     def elimina_tildes(self,s):
         return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
-        
+
     def send_mail_invoice(self, xml_element, access_key, send_m, s, server="localhost"):
         MAIL= u"Ud no ha configurado el correo del cliente. Diríjase a: \nTerceros->General->Medios de Contacto"
         pool = Pool()
@@ -752,7 +755,7 @@ class Invoice():
         empresa = str(self.elimina_tildes(empresa))
         empresa = empresa.replace(' ','_')
         empresa = empresa.lower()
-        
+
         ahora = datetime.datetime.now()
         year = str(ahora.year)
         client = self.party.name
@@ -789,7 +792,8 @@ class Invoice():
         #nuevaruta =os.getcwd() +'/comprobantes/'+empresa+'/'+year+'/'+month +'/'
         nr = s.model.nodux_electronic_invoice_auth.conexiones.path_files(ruc, {})
         nuevaruta = nr +empresa+'/'+year+'/'+month +'/'
-        self.write([self],{'estado_sri': 'AUTORIZADO', 'path_xml': nuevaruta+name_xml,'numero_autorizacion' : access_key, 'path_pdf':nuevaruta+name_pdf})
+        new_save = 'comprobantes/'+empresa+'/'+year+'/'+month +'/'
+        self.write([self],{'estado_sri': 'AUTORIZADO', 'path_xml': new_save+name_xml,'numero_autorizacion' : access_key, 'path_pdf':new_save+name_pdf})
         correos = pool.get('party.contact_mechanism')
         correo = correos.search([('type','=','email')])
         InvoiceReport = Pool().get('account.invoice', type='report')
@@ -818,15 +822,15 @@ class Invoice():
         xml_element = unicode(xml_element, 'utf-8')
         xml_element = self.elimina_tildes(xml_element)
         xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<'))
-        
+
         save_files = s.model.nodux_electronic_invoice_auth.conexiones.save_file(empresa, name_pdf, name_xml, reporte, xml,{})
         p_xml = nuevaruta + name_xml
         p_pdf = nuevaruta + name_pdf
         s.model.nodux_electronic_invoice_auth.conexiones.send_mail(name_pdf, name, p_xml, p_pdf, from_email, to_email, n_tipo, num_fac, client, empresa_, ruc, {})
 
         return True
-    
-    
+
+
 
     def get_credit_note_element(self):
 
@@ -847,7 +851,11 @@ class Invoice():
         infoNotaCredito = etree.Element('infoNotaCredito')
         etree.SubElement(infoNotaCredito, 'fechaEmision').text = self.invoice_date.strftime('%d/%m/%Y')
         #etree.subElement(infoNotaCredito, 'dirEstablecimiento').text = self.company.party.address[0]
-        etree.SubElement(infoNotaCredito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        if self.party.type_document:
+            etree.SubElement(infoNotaCredito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        else:
+            self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
+
         etree.SubElement(infoNotaCredito, 'razonSocialComprador').text = self.party.name
         etree.SubElement(infoNotaCredito, 'identificacionComprador').text = self.party.vat_number
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
@@ -892,7 +900,7 @@ class Invoice():
             if code:
                 code.replace(u'%',' ').replace(u'º',' ').replace(u'Ñ', 'N').replace(u'ñ','n')
                 code = ''.join((c for c in unicodedata.normalize('NFD', code) if unicodedata.category(c) != 'Mn'))
-                
+
                 return code
             return '1'
         detalles = etree.Element('detalles')
@@ -1021,7 +1029,12 @@ class Invoice():
             etree.SubElement(infoCompRetencion, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
         else :
             etree.SubElement(infoCompRetencion, 'obligadoContabilidad').text = 'NO'
-        etree.SubElement(infoCompRetencion, 'tipoIdentificacionSujetoRetenido').text = tipoIdentificacion[self.party.type_document]
+
+        if self.party.type_document:
+            etree.SubElement(infoCompRetencion, 'tipoIdentificacionSujetoRetenido').text = tipoIdentificacion[self.party.type_document]
+        else:
+            self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
+
         etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = 'PRUEBAS SERVICIO DE RENTAS INTERNAS'
         #self.party.name
         etree.SubElement(infoCompRetencion, 'identificacionSujetoRetenido').text = self.party.vat_number
@@ -1104,7 +1117,7 @@ class Invoice():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-            
+
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1181,7 +1194,11 @@ class Invoice():
         infoNotaDebito = etree.Element('infoNotaDebito')
         etree.SubElement(infoNotaDebito, 'fechaEmision').text = self.invoice_date.strftime('%d/%m/%Y')
         #etree.subElement(infoNotaCredito, 'dirEstablecimiento').text = self.company.party.address[0]
-        etree.SubElement(infoNotaDebito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        if self.party.type_document:
+            etree.SubElement(infoNotaDebito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        else:
+            self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
+
         etree.SubElement(infoNotaDebito, 'razonSocialComprador').text = self.party.name
         etree.SubElement(infoNotaDebito, 'identificacionComprador').text = self.party.vat_number
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
@@ -1296,7 +1313,7 @@ class Invoice():
             name_l = name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-            
+
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1361,7 +1378,7 @@ class Invoice():
         name_l = name.lower()
         name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
-            
+
         if self.company.file_pk12:
             archivo = self.company.file_pk12
         else :
@@ -1421,7 +1438,7 @@ class Invoice():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-            
+
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1535,7 +1552,7 @@ class Invoice():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-            
+
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
