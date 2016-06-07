@@ -227,7 +227,10 @@ class Invoice():
                     invoice.get_taxes()
                     invoice.connect_db()
             elif invoice.type == 'in_invoice':
-                invoice.create_move()
+                if invoice.number:
+                    pass
+                else:
+                    invoice.set_number()
                 moves.append(invoice.create_move())
             elif invoice.type == 'out_debit_note':
                 invoice.create_move()
@@ -342,7 +345,7 @@ class Invoice():
         number = self.number
         #auth = self.journal_id.auth_id
         infoTributaria = etree.Element('infoTributaria')
-        etree.SubElement(infoTributaria, 'ambiente').text = '1'
+        etree.SubElement(infoTributaria, 'ambiente').text = '2'
         #proxy.SriService.get_active_env()
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
         etree.SubElement(infoTributaria, 'razonSocial').text = self.company.party.name
@@ -483,7 +486,7 @@ class Invoice():
                     if str('{:.0f}'.format(t.tax.rate*100)) == '14':
                         codigoPorcentaje = '3'
                         codigo = '2'
-                    if tax.tax.rate == None:
+                    if t.tax.rate == None:
                         codigoPorcentaje = '6'
                     etree.SubElement(impuesto, 'codigoPorcentaje').text = codigoPorcentaje
                     etree.SubElement(impuesto, 'tarifa').text = str('{:.0f}'.format(t.tax.rate*100))
@@ -501,7 +504,7 @@ class Invoice():
                     if str('{:.0f}'.format(t.tax.rate*100)) == '14':
                         codigoPorcentaje = '3'
                         codigo = '2'
-                    if tax.tax.rate == None:
+                    if t.tax.rate == None:
                         codigoPorcentaje = '6'
                     etree.SubElement(impuesto, 'codigoPorcentaje').text = codigoPorcentaje
                     etree.SubElement(impuesto, 'tarifa').text = str('{:.0f}'.format(t.tax.rate*100))
@@ -538,7 +541,7 @@ class Invoice():
         t_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
         #t_amb=proxy.SriService.get_active_env()
-        t_amb="1"
+        t_amb="2"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
@@ -629,7 +632,7 @@ class Invoice():
             else:
                 pass
 
-            nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
+            nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_r, {})
             print "La nueva ruta ", nuevaruta
             """
             shutil.copy2(name_c, nuevaruta)
@@ -661,9 +664,9 @@ class Invoice():
                 self.raise_user_error(result)
             time.sleep(WAIT_FOR_RECEIPT)
             # solicitud al SRI para autorizacion del comprobante electronico
-            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_l, 'out_invoice',{})
+            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_r, 'out_invoice',{})
 
-            print "LLega ", doc_xml, m, auth, path, numero, num
+            print "LLega: ", doc_xml, m, auth, path, numero, num
             if doc_xml is None:
                 msg = ' '.join(m)
                 raise m
@@ -792,8 +795,10 @@ class Invoice():
         #nuevaruta =os.getcwd() +'/comprobantes/'+empresa+'/'+year+'/'+month +'/'
         nr = s.model.nodux_electronic_invoice_auth.conexiones.path_files(ruc, {})
         nuevaruta = nr +empresa+'/'+year+'/'+month +'/'
-        new_save = 'comprobantes/'+empresa+'/'+year+'/'+month +'/'
+
+	    new_save = 'comprobantes/'+empresa+'/'+year+'/'+month +'/'
         self.write([self],{'estado_sri': 'AUTORIZADO', 'path_xml': new_save+name_xml,'numero_autorizacion' : access_key, 'path_pdf':new_save+name_pdf})
+
         correos = pool.get('party.contact_mechanism')
         correo = correos.search([('type','=','email')])
         InvoiceReport = Pool().get('account.invoice', type='report')
@@ -830,8 +835,6 @@ class Invoice():
 
         return True
 
-
-
     def get_credit_note_element(self):
 
         pool = Pool()
@@ -855,7 +858,6 @@ class Invoice():
             etree.SubElement(infoNotaCredito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-
         etree.SubElement(infoNotaCredito, 'razonSocialComprador').text = self.party.name
         etree.SubElement(infoNotaCredito, 'identificacionComprador').text = self.party.vat_number
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
@@ -1029,12 +1031,10 @@ class Invoice():
             etree.SubElement(infoCompRetencion, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
         else :
             etree.SubElement(infoCompRetencion, 'obligadoContabilidad').text = 'NO'
-
         if self.party.type_document:
             etree.SubElement(infoCompRetencion, 'tipoIdentificacionSujetoRetenido').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-
         etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = 'PRUEBAS SERVICIO DE RENTAS INTERNAS'
         #self.party.name
         etree.SubElement(infoCompRetencion, 'identificacionSujetoRetenido').text = self.party.vat_number
@@ -1198,7 +1198,6 @@ class Invoice():
             etree.SubElement(infoNotaDebito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-
         etree.SubElement(infoNotaDebito, 'razonSocialComprador').text = self.party.name
         etree.SubElement(infoNotaDebito, 'identificacionComprador').text = self.party.vat_number
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
@@ -1731,7 +1730,7 @@ class Invoice():
         fecha = time.strftime('%d%m%Y')
         tipo_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
-        tipo_amb="1"
+        tipo_amb="2"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
