@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+
+      <!--print-->
+      <record model="ir.action.report" id='print_withholding_e'>
+          <field name="name">RIDE retencion proveedor</field>
+          <field name="model">account.withholding</field>
+          <field name="report_name">account.withholding.print_withholding_e</field>
+          <field name="report">nodux_account_electronic_invoice_ec/withholding.odt</field>
+          <field name="style"></field>
+      </record>
+
+      <record model="ir.action.keyword" id="report_withholding_e_keyword">
+         <field name="keyword">form_print</field>
+         <field name="model">account.withholding,-1</field>
+         <field name="action" ref="print_withholding_e"/>
+     </record>
+
+      </data>
+</tryton>

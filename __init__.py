@@ -8,6 +8,7 @@ from .company import *
 from .user import *
 from .tax import *
 from .product import *
+from .withholding import *
 def register():
     Pool.register(
         Party,
@@ -22,6 +23,7 @@ def register():
         Tax,
         Category,
         Template,
+        AccountWithholding,
         module='nodux_account_electronic_invoice_ec', type_='model')
     Pool.register(
         SendSriLote,
@@ -29,4 +31,5 @@ def register():
         module='nodux_account_electronic_invoice_ec', type_='wizard')
     Pool.register(
         InvoiceReport,
+        PrintWithholdingE,
         module='nodux_account_electronic_invoice_ec', type_='report')

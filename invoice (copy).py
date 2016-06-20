@@ -121,12 +121,6 @@ class Invoice():
     path_pdf = fields.Char(u'Path archivo pdf de factura', readonly=True)
     numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
 
-    @classmethod
-    def __setup__(cls):
-        super(Invoice, cls).__setup__()
-        cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
-                'invoice_report_cache', 'invoice_report_format']
-
     def _credit(self):
         '''
         Return values to credit invoice.
@@ -153,6 +147,12 @@ class Invoice():
         if to_create:
             res['taxes'].append(('create', to_create))
         return res
+
+    @classmethod
+    def __setup__(cls):
+        super(Invoice, cls).__setup__()
+        cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
+                'invoice_report_cache', 'invoice_report_format']
 
     @staticmethod
     def default_lote():
@@ -196,7 +196,6 @@ class Invoice():
     @ModelView.button
     @Workflow.transition('posted')
     def post(cls, invoices):
-        print "Metodo post de facturacion electronica"
         Move = Pool().get('account.move')
         moves = []
 
@@ -213,25 +212,24 @@ class Invoice():
                     invoice.get_detail_element()
                     invoice.action_generate_invoice()
                     invoice.connect_db()
-            elif invoice.type == 'in_invoice':
-                print "Llama a este metodo"
+            elif invoice.type == 'in_withholding':
                 invoice.create_move()
+                invoice.set_number()
+                moves.append(invoice.create_move())
+                if invoice.lote == False:
+                    #invoice.authenticate()
+                    invoice.action_generate_invoice_w()
+                    invoice.get_tax_element()
+                    invoice.get_invoice_element_w()
+                    invoice.generate_xml_invoice_w()
+                    invoice.get_taxes()
+                    invoice.connect_db()
+            elif invoice.type == 'in_invoice':
                 if invoice.number:
                     pass
                 else:
                     invoice.set_number()
                 moves.append(invoice.create_move())
-                if invoice.lote == False:
-                    Withholding = Pool().get('account.withholding')
-                    withholdings = Withholding.search([('number'), '=', invoice.ref_withholding])
-                    for withholding in withholdings:
-                    #invoice.authenticate()                        
-                        withholding.get_invoice_element_w()
-                        withholding.get_tax_element()
-                        withholding.generate_xml_invoice_w()
-                        withholding.get_taxes()
-                        withholding.action_generate_invoice_w()
-                        withholding.connect_db()
             elif invoice.type == 'out_debit_note':
                 invoice.create_move()
                 invoice.set_number()
@@ -541,7 +539,7 @@ class Invoice():
         t_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
         #t_amb=proxy.SriService.get_active_env()
-        t_amb="1"
+        t_amb="2"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
@@ -633,6 +631,7 @@ class Invoice():
                 pass
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
+            print "La nueva ruta ", nuevaruta
             """
             shutil.copy2(name_c, nuevaruta)
             os.remove(name_c)
@@ -646,20 +645,26 @@ class Invoice():
             file_check = (nuevaruta+'/'+name_c)
             password = self.company.password_pk12
             error = s.model.nodux_electronic_invoice_auth.conexiones.check_digital_signature(file_check,{})
+            print "El error es ", error
             if error == '1':
                 self.raise_user_error('No se ha encontrado el archivo de firma digital (.p12)')
 
             signed_document= s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
 
             #envio al sri para recepcion del comprobante electronico
-
+            """
+            print "Signed document ", signed_document
+            signed_document = self.elimina_tildes(signed_document)
+            print "Sin tildes para enviar", signed_document
+            """
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
             if result != True:
                 self.raise_user_error(result)
             time.sleep(WAIT_FOR_RECEIPT)
             # solicitud al SRI para autorizacion del comprobante electronico
-            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_r, 'out_invoice', signed_document,{})
+            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_r, 'out_invoice', documento{})
 
+            print "LLega: ", doc_xml, m, auth, path, numero, num
             if doc_xml is None:
                 msg = ' '.join(m)
                 raise m
@@ -668,6 +673,7 @@ class Invoice():
                 self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
             else:
                 pass
+            print "Archivos ", signed_document, doc_xml
             self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
         else:
@@ -714,10 +720,12 @@ class Invoice():
                 file_check = (nuevaruta+'/'+name_c)
                 password = self.company.password_pk12
                 error = s.model.nodux_electronic_invoice_auth.conexiones.check_digital_signature(file_check,{})
+                print "El error es ", error
                 if error == '1':
                     self.raise_user_error('No se ha encontrado el archivo de firma digital (.p12)')
                 signed_document = s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(notaCredito, file_pk12, password,{})
                 #envio al sri para recepcion del comprobante electronico
+                print "Signed document ", signed_document
                 result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
                 if result != True:
                     self.raise_user_error(result)
@@ -866,6 +874,7 @@ class Invoice():
         #totalConImpuestos
         totalConImpuestos = etree.Element('totalConImpuestos')
         for tax in self.taxes:
+            print "el impuesto ", tax, self.taxes
             totalImpuesto = etree.Element('totalImpuesto')
             etree.SubElement(totalImpuesto, 'codigo').text = "2"
             if str('{:.0f}'.format(tax.tax.rate*100)) == '12':
@@ -1115,6 +1124,7 @@ class Invoice():
             f.write(archivo)
             f.close()
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
+            print authenticate, send_m, active
             if authenticate == '1':
                 pass
             else:
@@ -1718,7 +1728,7 @@ class Invoice():
         fecha = time.strftime('%d%m%Y')
         tipo_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
-        tipo_amb="1"
+        tipo_amb="2"
         n_cbte= self.number
         cod= "12345678"
         t_ems= self.company.emission_code
