@@ -13,8 +13,8 @@
             <newline/>
             <separator string="Firma Digital" id='firma'/>
             <newline/>
-            <label name="file_pk12"/>
-            <field name="file_pk12"/>
+            <!--label name="file_pk12"/>
+            <field name="file_pk12"/-->
             <label name="pass_pk12"/>
             <field name="pass_pk12" widget="password"/>
             <newline/>
@@ -23,4 +23,3 @@
         </page>
     </xpath>
 </data>
-
