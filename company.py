@@ -33,7 +33,6 @@ class Company(ModelSQL, ModelView):
 
     password = fields.Function(fields.Char('Password WS'), getter='get_password', setter='set_password')
     user = fields.Function(fields.Char('Usuario WS'), getter='get_user', setter='set_user')
-    pass_pk12 = fields.Function(fields.Char('Password de la firma digital'), getter='get_pk12p', setter='set_pk12p')
 
     @classmethod
     def __setup__(cls):
