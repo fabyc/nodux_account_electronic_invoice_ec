@@ -119,7 +119,7 @@ class Invoice():
             })
     path_xml = fields.Char(u'Path archivo xml de comprobante', readonly=True)
     path_pdf = fields.Char(u'Path archivo pdf de factura', readonly=True)
-    numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
+    numero_autorizacion = fields.Char(u'Número de Autorización')
 
     @classmethod
     def __setup__(cls):
@@ -225,7 +225,7 @@ class Invoice():
                     Withholding = Pool().get('account.withholding')
                     withholdings = Withholding.search([('number'), '=', invoice.ref_withholding])
                     for withholding in withholdings:
-                    #invoice.authenticate()                        
+                    #invoice.authenticate()
                         withholding.get_invoice_element_w()
                         withholding.get_tax_element()
                         withholding.generate_xml_invoice_w()
@@ -612,11 +612,11 @@ class Invoice():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
+            """
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
                 self.raise_user_error(PK12)
-            """
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
@@ -1772,7 +1772,7 @@ class SendSriLote(Wizard):
                     invoice.generate_xml_lote()
                     invoice.action_generate_lote()
                     invoice.generate_access_key_lote()
-
+                    invoice.connect_db()
 
                 elif invoice.type == u'out_credit_note':
                     invoice.generate_xml_lote_credit()
@@ -1780,17 +1780,23 @@ class SendSriLote(Wizard):
                     invoice.connect_db()
 
 
-                elif invoice.type == 'in_withholding':
-                    invoice.generate_xml_lote_w()
-                    invoice.action_generate_lote_w()
-                    invoice.connect_db()
+                elif invoice.type == u'in_invoice':
+                    Withholding = Pool().get('account.withholding')
+                    withholdings = Withholding.search([('number'), '=', invoice.ref_withholding])
+                    for withholding in withholdings:
+                    #invoice.authenticate()
+                        withholding.get_invoice_element_w()
+                        withholding.get_tax_element()
+                        withholding.generate_xml_invoice_w()
+                        withholding.get_taxes()
+                        withholding.action_generate_invoice_w()
+                        withholding.connect_db()
                 """
                 elif invoice.type == 'out_debit_note':
                     invoice.generate_xml_lote_debit()
                     invoice.action_generate_lote_debit()
                     invoice.connect_db()
                 """
-            invoice.connect_db()
         return 'end'
 
 class InvoiceReport(Report):
@@ -1807,7 +1813,10 @@ class InvoiceReport(Report):
         user = User(Transaction().user)
         localcontext['company'] = user.company
         localcontext['vat_number'] = cls._get_vat_number(user.company)
-        localcontext['barcode_img']=cls._get_barcode_img(Invoice, invoice)
+        if invoice.type == 'in_invoice':
+            pass
+        else:
+            localcontext['barcode_img']=cls._get_barcode_img(Invoice, invoice)
         localcontext['vat_number_cliente'] = cls._get_vat_number_cliente(Invoice, invoice)
         localcontext['subtotal_12'] = cls._get_subtotal_12(Invoice, invoice)
         localcontext['subtotal_0'] = cls._get_subtotal_0(Invoice, invoice)

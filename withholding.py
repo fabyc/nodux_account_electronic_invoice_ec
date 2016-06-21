@@ -211,12 +211,12 @@ class AccountWithholding():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-
+            """
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
                 self.raise_user_error(PK12)
-            """
+
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
@@ -290,8 +290,14 @@ class AccountWithholding():
             """
             print "tax.tax.code_withholding ***", tax.tax
             impuesto = etree.Element('impuesto')
-            etree.SubElement(impuesto, 'codigo').text = tax.tax.code_withholding
-            etree.SubElement(impuesto, 'codigoRetencion').text = tax.tax.code_electronic.code
+            if tax.tax.code_withholding:
+                etree.SubElement(impuesto, 'codigo').text = tax.tax.code_withholding
+            else:
+                self.raise_user_error('No ha configurado el impuesto asignado para la retencion \nDirijase a:Impuestos, Impuestos, Seleccione el impuesto, Codigo')
+            if tax.tax.code_electronic:
+                etree.SubElement(impuesto, 'codigoRetencion').text = tax.tax.code_electronic.code
+            else:
+                self.raise_user_error('No ha configurado el codigo de retencion \n Dirijase a: Impuestos, Impuestos, Seleccione el impuesto, Codigo')
             etree.SubElement(impuesto, 'baseImponible').text = '{:.2f}'.format(tax.base)
             etree.SubElement(impuesto, 'porcentajeRetener').text= '{:.0f}'.format(tax.tax.rate*(-100))
             etree.SubElement(impuesto, 'valorRetenido').text= '{:.2f}'.format(tax.amount*(-1))
@@ -329,7 +335,6 @@ class AccountWithholding():
         numero_cbte= n_cbte.replace('-','')
         #unimos todos los datos en una sola cadena
         key_temp=f+t_cbte+ruc+t_amb+numero_cbte+cod+t_ems
-        print "Hey temp ", key_temp
         #recorremos la cadena para ir guardando en una lista de enteros
         key = []
         for c in key_temp:
