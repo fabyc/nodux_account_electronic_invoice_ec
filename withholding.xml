@@ -19,5 +19,12 @@ this repository contains the full copyright notices and license terms. -->
          <field name="action" ref="print_withholding_e"/>
      </record>
 
-      </data>
+     <record model="ir.ui.view" id="withholding_view_tree">
+       <field name="model">account.withholding</field>
+       <field name="type">tree</field>
+        <field name="inherit" ref="nodux_account_withholding_out_ec.withholding_view_tree"/>
+       <field name="name">withholding_tree</field>
+     </record>
+
+    </data>
 </tryton>

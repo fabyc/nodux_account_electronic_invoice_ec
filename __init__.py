@@ -32,4 +32,5 @@ def register():
     Pool.register(
         InvoiceReport,
         PrintWithholdingE,
+        PrintShipmentE,
         module='nodux_account_electronic_invoice_ec', type_='report')

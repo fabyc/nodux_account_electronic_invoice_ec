@@ -589,7 +589,7 @@ class Invoice():
             # Codigo de acceso
         if not self.type in [ 'out_invoice', 'out_credit_note']:
             pass
-            # Validar que el envio del comprobante electronico se realice dentro de las 24 horas posteriores a su emision
+        # Validar que el envio del comprobante electronico se realice dentro de las 24 horas posteriores a su emision
         pool = Pool()
         Date = pool.get('ir.date')
         date_f = self.invoice_date
