@@ -432,7 +432,7 @@ class Invoice():
 
             detalle = etree.Element('detalle')
             etree.SubElement(detalle, 'codigoPrincipal').text = fix_chars(line.product.code)
-            etree.SubElement(detalle, 'descripcion').text = fix_chars(line.product.name)
+            etree.SubElement(detalle, 'descripcion').text = fix_chars(line.description)
             etree.SubElement(detalle, 'cantidad').text = '%.2f' % (line.quantity)
             etree.SubElement(detalle, 'precioUnitario').text = '%.2f' % (line.unit_price)
             etree.SubElement(detalle, 'descuento').text = '0.00'
@@ -902,7 +902,7 @@ class Invoice():
 
             detalle = etree.Element('detalle')
             etree.SubElement(detalle, 'codigoInterno').text = fix_chars(line.product.code)
-            etree.SubElement(detalle, 'descripcion').text = fix_chars(line.product.name)
+            etree.SubElement(detalle, 'descripcion').text = fix_chars(line.description)
             etree.SubElement(detalle, 'cantidad').text = '%.2f' % (line.quantity)
             etree.SubElement(detalle, 'precioUnitario').text = '%.2f' % (line.unit_price)
             etree.SubElement(detalle, 'descuento').text = '0.00'
@@ -1234,7 +1234,7 @@ class Invoice():
         motivos = etree.Element('motivos')
         for line in self.lines:
             motivo = etree.Element('motivo')
-            etree.SubElement(motivo, 'razon').text = fix_chars(line.product.name)
+            etree.SubElement(motivo, 'razon').text = fix_chars(line.description)
             etree.SubElement(motivo, 'valor').text = '%.2f' % (line.unit_price)
             motivos.append(motivo)
         return motivos
