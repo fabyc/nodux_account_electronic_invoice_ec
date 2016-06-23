@@ -180,7 +180,7 @@ class ShipmentOut():
         tipo = 'out_shipment'
         fecha = str(self.effective_date)
         empresa = self.company.party.name
-        numero = self.number
+        numero = self.code
         path_xml = self.path_xml
         path_pdf = self.path_pdf
         estado = self.estado_sri
@@ -188,13 +188,13 @@ class ShipmentOut():
         correos = pool.get('party.contact_mechanism')
         correo = correos.search([('type','=','email')])
         for c in correo:
-            if c.party == self.customer.party:
+            if c.party == self.customer:
                 to_email = c.value
             if c.party == self.company.party:
                 to_email_2 = c.value
         email_e= to_email_2
         email = to_email
-        total = str(self.total_amount)
+        total = ''
         s.model.nodux_electronic_invoice_auth.conexiones.connect_db( nombre, cedula, ruc, nombre_e, tipo, fecha, empresa, numero, path_xml, path_pdf,estado, auth, email, email_e, total, {})
 
     def send_mail_invoice(self, xml_element, access_key, send_m, s, server="localhost"):
@@ -237,14 +237,8 @@ class ShipmentOut():
 
         correos = pool.get('party.contact_mechanism')
         correo = correos.search([('type','=','email')])
-        InvoiceReport = Pool().get('stock.shipment.print_shipment_e', type='report')
+        InvoiceReport = Pool().get('stock.shipment.out.print_shipment_e', type='report')
         report = InvoiceReport.execute([self.id], {})
-
-        name = access_key + ".xml"
-        reporte = xmlrpclib.Binary(report[1])
-        xml_element = unicode(xml_element, 'utf-8')
-        xml_element = self.elimina_tildes(xml_element)
-        xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<'))
 
         email=''
         cont = 0
@@ -264,7 +258,6 @@ class ShipmentOut():
         else :
             from_email = "nodux.ec@gmail.com"
 
-        invoice_xml = xml_elememt
         name = access_key + ".xml"
         reporte = xmlrpclib.Binary(report[1])
         xml_element = unicode(xml_element, 'utf-8')
