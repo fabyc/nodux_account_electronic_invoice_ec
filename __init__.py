@@ -9,6 +9,7 @@ from .user import *
 from .tax import *
 from .product import *
 from .withholding import *
+from .account import *
 def register():
     Pool.register(
         Party,
@@ -24,6 +25,7 @@ def register():
         Category,
         Template,
         AccountWithholding,
+        Configuration,
         module='nodux_account_electronic_invoice_ec', type_='model')
     Pool.register(
         SendSriLote,
