@@ -111,9 +111,13 @@ class Invoice():
 
     __name__ = 'account.invoice'
 
-    lote = fields.Boolean(u'Envío de Facturas por Lote')
+    lote = fields.Boolean(u'Envío de Facturas por Lote', states={
+            'readonly' : Eval('state') != 'draft',
+            })
     #ambiente = fields.Date(u'Fecha de Factura que se modifica')
-    estado_sri = fields.Char('Estado Facturacion-Electronica', size=24, readonly=True)
+    estado_sri = fields.Char('Estado Facturacion-Electronica', size=24, readonly=True, states={
+            'invisible': Eval('type') == 'in_invoice',
+            })
     mensaje = fields.Text('Mensaje de error SRI', readonly=True, states={
             'invisible': Eval('estado_sri') != 'NO AUTORIZADO',
             })
