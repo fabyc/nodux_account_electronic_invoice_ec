@@ -153,6 +153,29 @@ class ShipmentOut():
         cls.effective_date.states['required'] = Eval('remision', True)
         cls.planned_date.states['required'] = Eval('remision', True)
 
+    #metodo para asignar impuesto
+    @fields.depends('moves', 'remision', 'number_c')
+    def on_change_remision(self):
+        res = {}
+        venta = None
+        invoices = None
+        invoice = None
+        if self.remision == True:
+            for s in self.moves:
+                venta = s.sale
+            pool = Pool()
+            Invoice = pool.get('account.invoice')
+            invoices = Invoice.search([('description', '=', venta.reference)])
+            if invoices:
+                for i in invoices:
+                    invoice = i
+            if invoice:
+                res['number_c'] = invoice.number
+            else:
+                res['number_c'] = None
+        return res
+
+
     @classmethod
     @ModelView.button
     @Workflow.transition('done')
