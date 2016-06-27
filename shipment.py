@@ -105,34 +105,52 @@ class ShipmentOut():
     "Customer Shipment"
     __name__ = 'stock.shipment.out'
 
-    remision = fields.Boolean(u'Enviar Guía de Remisión al SRI')
+    remision = fields.Boolean(u'Enviar Guía de Remisión al SRI', states={
+        'readonly': Eval('state') == 'done',
+    })
     placa = fields.Char('Placa del medio de Transporte', states={
         'invisible':~Eval('remision',False),
         'required': Eval('remision',True),
+        'readonly': Eval('state') == 'done',
     })
     cod_estab_destino = fields.Char(u'Código de establecimiento de Destino', size=3, states={
         'invisible':~Eval('remision',False),
+        'readonly': Eval('state') == 'done',
     })
     ruta = fields.Char('Ruta', states={
         'invisible':~Eval('remision',False),
+        'required' : Eval('remision',True),
+        'readonly': Eval('state') == 'done',
+    })
+    partida = fields.Char('Direccion de partida', states={
+        'invisible':~Eval('remision',False),
+        'required' : Eval('remision',True),
+        'readonly': Eval('state') == 'done',
     })
     estado_sri= fields.Char(u'Estado Comprobante-Electrónico', size=24, readonly=True, states={
         'invisible':~Eval('remision',False),
+        'required': Eval('remision', True),
+        'readonly': Eval('state') == 'done',
     })
     number_c= fields.Char(u'Número del Documento de Sustento', size=17, states={
         'invisible':~Eval('remision',False),
+        'required' : Eval('remision', True),
+        'readonly': Eval('state') == 'done',
     })
     path_xml = fields.Char(u'Path archivo xml de comprobante', readonly=True)
     path_pdf = fields.Char(u'Path archivo pdf de factura', readonly=True)
     numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
     transporte = fields.Many2One('carrier','Transportista',states={
         'invisible':~Eval('remision',False),
+        'required' : Eval('remision', True),
+        'readonly': Eval('state') == 'done',
     })
 
     @classmethod
     def __setup__(cls):
         super(ShipmentOut, cls).__setup__()
-
+        cls.effective_date.states['required'] = Eval('remision', True)
+        cls.planned_date.states['required'] = Eval('remision', True)
 
     @classmethod
     @ModelView.button
@@ -144,7 +162,6 @@ class ShipmentOut():
 
         for shipment in shipments:
             if shipment.remision == True:
-                print "Llega metodo"
                 shipment.get_tax_element()
                 shipment.get_shipment_element()
                 shipment.get_destinatarios()
@@ -336,9 +353,8 @@ class ShipmentOut():
         if self.company.party.addresses:
             etree.SubElement(infoGuiaRemision, 'dirEstablecimiento').text = self.company.party.addresses[0].street
         if self.company.party.addresses:
-            etree.SubElement(infoGuiaRemision, 'dirPartida').text = self.company.party.addresses[0].street
+            etree.SubElement(infoGuiaRemision, 'dirPartida').text = self.partida
         etree.SubElement(infoGuiaRemision, 'razonSocialTransportista').text= self.transporte.party.name
-        print "Tipo ",self.transporte.party.type_document
         etree.SubElement(infoGuiaRemision, 'tipoIdentificacionTransportista').text= tipoIdentificacion[self.transporte.party.type_document]
         etree.SubElement(infoGuiaRemision, 'rucTransportista').text= self.transporte.party.vat_number
         etree.SubElement(infoGuiaRemision, 'rise').text= "No  obligatorios"
@@ -366,6 +382,7 @@ class ShipmentOut():
             self.raise_user_error(ERROR)
         for i in invoice:
             date_mod = i.invoice_date.strftime('%d/%m/%Y')
+            num_aut = i.numero_autorizacion
 
         company =  self.company
         customer = self.customer
@@ -380,7 +397,11 @@ class ShipmentOut():
         etree.SubElement(destinatario, 'ruta').text = self.ruta
         etree.SubElement(destinatario, 'codDocSustento').text = "01"
         etree.SubElement(destinatario, 'numDocSustento').text = num_mod
-        etree.SubElement(destinatario, 'fechaEmisionDocSustento').text = self.create_date.strftime('%d/%m/%Y')
+        if num_aut:
+            #etree.SubElement(destinatario, 'numAutDocSustento').text = num_aut
+            print "Si hay autorizacion"
+        etree.SubElement(destinatario, 'fechaEmisionDocSustento').text = date_mod#self.create_date.strftime('%d/%m/%Y')
+
         detalles = etree.Element('detalles')
         def fix_chars(code):
             if code:
@@ -692,6 +713,16 @@ class PrintShipmentE(CompanyReport):
         pool = Pool()
         Shipment = pool.get('stock.shipment.out')
         shipment = records[0]
+
+        num_mod=shipment.number_c
+        pool = Pool()
+        Invoices = pool.get('account.invoice')
+        invoices = Invoices.search([('number','=',num_mod)])
+        if invoices:
+            for i in invoices:
+                invoice = i
+        if invoice:
+            localcontext['invoice'] = invoice
         localcontext['company'] = Transaction().context.get('company')
         if shipment.numero_autorizacion:
             localcontext['barcode_img']= cls._get_barcode_img(Shipment, shipment)

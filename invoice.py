@@ -1371,7 +1371,7 @@ class Invoice():
         name_l = name.lower()
         name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
-
+        """
         if self.company.file_pk12:
             archivo = self.company.file_pk12
         else :
@@ -1380,15 +1380,25 @@ class Invoice():
         f = open(name_c, 'wb')
         f.write(archivo)
         f.close()
-        authenticate, send_m = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
+        """
+
+        authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
         if authenticate == '1':
             pass
         else:
             self.raise_user_error(AUTHENTICATE_ERROR)
 
+        if active == '1':
+            self.raise_user_error(ACTIVE_ERROR)
+        else:
+            pass
+
         nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
+
+        """
         shutil.copy2(name_c, nuevaruta)
         os.remove(name_c)
+        """
         file_pk12 = base64.encodestring(nuevaruta+'/'+name_c)
         password = self.company.password_pk12
 
@@ -1413,6 +1423,7 @@ class Invoice():
         """
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
+        ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquise con NODUX"
         WAIT_FOR_RECEIPT = 3
         TITLE_NOT_SENT = u'No se puede enviar el comprobante electronico al SRI'
         MESSAGE_SEQUENCIAL = u'Los comprobantes electrónicos deben ser enviados al SRI en orden secuencial'
@@ -1420,6 +1431,18 @@ class Invoice():
 
         if not self.type in ['out_invoice']:
             pass
+        # Validar que el envio del comprobante electronico se realice dentro de las 24 horas posteriores a su emision
+        pool = Pool()
+        Date = pool.get('ir.date')
+        date_f = self.invoice_date
+        date= Date.today()
+        limit= (date-date_f).days
+        #if limit > 1:
+         #   self.raise_user_error(MESSAGE_TIME_LIMIT)
+
+            # Validar que el envio de los comprobantes electronicos sea secuencial
+        #if not self.check_before_sent():
+            #self.raise_user_error(TITLE_NOT_SENT, MESSAGE_SEQUENCIAL)
         usuario = self.company.user_ws
         password_u= self.company.password_ws
         access_key = self.generate_access_key()
@@ -1431,7 +1454,7 @@ class Invoice():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-
+            """
             if self.company.file_pk12:
                 archivo = self.company.file_pk12
             else :
@@ -1440,15 +1463,24 @@ class Invoice():
             f = open(name_c, 'wb')
             f.write(archivo)
             f.close()
-            authenticate, send_m = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
+            """
+            authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
             else:
                 self.raise_user_error(AUTHENTICATE_ERROR)
 
+            if active == '1':
+                self.raise_user_error(ACTIVE_ERROR)
+            else:
+                pass
+
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
+
+            """
             shutil.copy2(name_c, nuevaruta)
             os.remove(name_c)
+            """
             # XML del comprobante electronico: factura
             lote1 = self.generate_xml_lote()
             lote = etree.tostring(lote1, encoding = 'utf8', method ='xml')
@@ -1456,25 +1488,30 @@ class Invoice():
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(lote, 'lote', {})
             if a:
                 self.raise_user_error(a)
+            file_pk12 = base64.encodestring(nuevaruta+'/'+name_c)
+            file_check = (nuevaruta+'/'+name_c)
+            password = self.company.password_pk12
+            error  = s.model.nodux_electronic_invoice_auth.conexiones.check_digital_signature(file_check,{})
+            if error == '1':
+                self.raise_user_error('No se ha encontrado el archivo de la firma digital(.p12)')
 
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(lote, {})
             if result != True:
                 self.raise_user_error(result)
             time.sleep(WAIT_FOR_RECEIPT)
             # solicitud al SRI para autorizacion del comprobante electronico
-            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization_lote(access_key, name_l, 'lote_out_invoice',{})
+            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization_lote(access_key, name_r, 'lote_out_invoice',{})
 
             if doc_xml is None:
                 msg = ' '.join(m)
                 raise m
 
-            if auth == False:
+            if auth == 'NO AUTORIZADO':
                 self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
-                self.raise_user_error(m)
             else:
                 pass
 
-            self.send_mail_invoice(doc_xml, access_key, send_m)
+            self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
         return access_key
 
