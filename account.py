@@ -19,5 +19,6 @@ class Configuration:
     def __setup__(cls):
         super(Configuration, cls).__setup__()
 
+    @staticmethod
     def default_lote():
         return False
