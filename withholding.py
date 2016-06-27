@@ -143,10 +143,10 @@ class AccountWithholding():
             etree.SubElement(infoCompRetencion, 'tipoIdentificacionSujetoRetenido').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-        if self.company.party.commercial_name:
-            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.company.party.commercial_name
+        if self.party.commercial_name:
+            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.party.commercial_name
         else:
-            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.company.party.name
+            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.party.name
         #self.party.name
         etree.SubElement(infoCompRetencion, 'identificacionSujetoRetenido').text = self.party.vat_number
         etree.SubElement(infoCompRetencion, 'periodoFiscal').text = self.move.period.start_date.strftime('%m/%Y')
