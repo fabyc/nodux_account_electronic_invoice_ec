@@ -115,6 +115,7 @@ class ShipmentOut():
     })
     cod_estab_destino = fields.Char(u'Código de establecimiento de Destino', size=3, states={
         'invisible':~Eval('remision',False),
+        'required' : Eval('remision', True),
         'readonly': Eval('state') == 'done',
     })
     ruta = fields.Char('Ruta', states={
