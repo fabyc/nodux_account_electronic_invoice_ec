@@ -70,7 +70,7 @@ class TaxSpecial(ModelSQL, ModelView):
 class Tax(ModelSQL, ModelView):
     __name__ = 'account.tax'
 
-    code_electronic = fields.Many2One('account.tax.electronic', "Codigo para Retencion-Comprobantes Electronicos", 
+    code_electronic = fields.Many2One('account.tax.electronic', "Codigo para Retencion-Comprobantes Electronicos",
         help="Seleccionar el codigo por impuesto de acuerdo al porcentaje de retencion")
     code_withholding = fields.Selection(_IMPUESTO, 'Impuesto asignado para la retencion', help="Seleccionar el codigo de impuesto asignados para la retencion")
 
@@ -81,3 +81,16 @@ class Tax(ModelSQL, ModelView):
     @staticmethod
     def default_code_withholding():
         return ''
+
+    #metodo para asignar impuesto
+    @fields.depends('code_electronic', 'code_withholding')
+    def on_change_code_electronic(self):
+        res = {}
+        if self.code_electronic:
+            if 'IVA' in self.code_electronic.name:
+                code = '2'
+                res['code_withholding'] = code
+            else:
+                code = '1'
+                res['code_withholding'] = code
+        return res
