@@ -10,7 +10,6 @@ this repository contains the full copyright notices and license terms. -->
           <field name="model">account.withholding</field>
           <field name="report_name">account.withholding.print_withholding_e</field>
           <field name="report">nodux_account_electronic_invoice_ec/withholding.odt</field>
-          <field name="style"></field>
       </record>
 
       <record model="ir.action.keyword" id="report_withholding_e_keyword">
@@ -21,7 +20,6 @@ this repository contains the full copyright notices and license terms. -->
 
      <record model="ir.ui.view" id="withholding_view_tree">
        <field name="model">account.withholding</field>
-       <field name="type">tree</field>
         <field name="inherit" ref="nodux_account_withholding_out_ec.withholding_view_tree"/>
        <field name="name">withholding_tree</field>
      </record>

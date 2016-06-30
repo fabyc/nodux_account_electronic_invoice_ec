@@ -19,7 +19,7 @@
             <field name="pass_pk12" widget="password"/>
             <newline/>
             <label name="logo"/>
-            <field xfill="0" xexpand="1" name="logo" img_width="80" img_height="80" height="80" width="80" widget="image"/>
+            <field xfill="0" xexpand="1" name="logo" height="80" width="80" widget="image"/>
         </page>
     </xpath>
 </data>

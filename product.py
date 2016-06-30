@@ -9,7 +9,6 @@ from trytond.transaction import Transaction
 from trytond.pool import PoolMeta
 
 __all__ = ['Category', 'Template', 'MissingFunction']
-__metaclass__ = PoolMeta
 
 _TARIFA = [
     ('', ''),
@@ -43,39 +42,40 @@ class MissingFunction(fields.Function):
 
 
 class Category:
+    __metaclass__ = PoolMeta
     __name__ = 'product.category'
-        
+
     iva_parent = fields.Boolean('Usar tarifa del padre', help='Usar el tipo de tarifa definido en el padre')
 
     ice = fields.Boolean('Aplica Impuesto a los Consumos Especiales (ICE)',
         help='Seleccione en caso que el producto aplique a Impuesto a los Consumos Especiales(ICE)',states={
             'invisible': Eval('iva_parent',False),
             })
-        
+
     iva_tarifa = fields.Selection(_TARIFA, 'Tarifa IVA', help = "Tarifa correspondiente a IVA", states={
             'invisible': Eval('iva_parent',False),
             })
-            
+
     ice_tarifa = fields.Many2One('account.tax.special', 'Tarifa ICE', help = "Tarifa correspondiente a ICE", states={
             'invisible': ~Eval('ice',True),
             })
 
     iva_tarifa_used = fields.Function(fields.Selection(_TARIFA,'Tarifa correspondiente a IVA'), 'get_iva')
     ice_tarifa_used = fields.Function(fields.Many2One('account.tax.special', 'Tarifa ICE'), 'get_ice')
-    
+
     @classmethod
     def __setup__(cls):
         super(Category, cls).__setup__()
-        
+
         cls.parent.states['required'] = Or(
             cls.parent.states.get('required', False),
             Eval('iva_parent', False))
         cls.parent.depends.extend(['iva_parent'])
-    
+
     @staticmethod
     def default_ice():
         return False
-    
+
     @staticmethod
     def default_iva_parent():
         return False
@@ -96,43 +96,39 @@ class Category:
         return iva if ice else ""
 
 class Template:
+    __metaclass__ = PoolMeta
     __name__ = 'product.template'
     iva_category = fields.Boolean('Usar tarifa de la categoria',
         help='Usar el tipo de tarifa definido en la categoria')
-        
+
     ice = fields.Boolean('Aplica Impuesto a los Consumos Especiales (ICE)',
         help='Seleccione en caso que el producto aplique a Impuesto a los Consumos Especiales(ICE)',states={
             'invisible': Eval('iva_category',False),
             })
-        
+
     iva_tarifa = fields.Selection(_TARIFA, 'Tarifa IVA', help = "Tarifa correspondiente a IVA", states={
             'invisible': Eval('iva_category',False),
             })
-    
+
     ice_tarifa = fields.Many2One('account.tax.special', 'Tarifa ICE', help = "Tarifa correspondiente a ICE", states={
             'invisible': ~Eval('ice',True),
             })
 
     iva_tarifa_used = fields.Function(fields.Selection(_TARIFA,'Tarifa correspondiente a IVA'), 'get_iva')
     ice_tarifa_used = fields.Function(fields.Many2One('account.tax.special', 'Tarifa ICE'), 'get_ice')
-    
+
     @classmethod
     def __setup__(cls):
         super(Template, cls).__setup__()
-        
-        cls.category.states['required'] = Or(
-            cls.category.states.get('required', False),
-            Eval('iva_category', False))
-        cls.category.depends.extend(['iva_category'])
 
     @staticmethod
     def default_ice():
         return False
-    
+
     @staticmethod
     def default_iva_category():
         return False
-        
+
     def get_ice(self, name):
         if self.iva_category:
             # Use __getattr__ to avoid raise of exception

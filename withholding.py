@@ -47,7 +47,6 @@ import unicodedata
 from trytond.modules.company import CompanyReport
 
 __all__ = ['AccountWithholding', 'PrintWithholdingE']
-__metaclass__ = PoolMeta
 
 tipoDocumento = {
     'out_invoice': '01',
@@ -100,16 +99,17 @@ tipoProvedor = {
 
 _CREDIT_TYPE = {
     None: None,
-    'out_invoice': 'out_credit_note',
-    'in_invoice': 'in_credit_note',
-    'out_credit_note': 'out_invoice',
-    'in_credit_note': 'in_invoice',
+    'out': 'out_credit_note',
+    'in': 'in_credit_note',
+    'out_credit_note': 'out',
+    'in_credit_note': 'in',
     }
 
 # estructura para conexion con xmlrpc (cuando se envia directo el user y pass no se pone '')
 #s = xmlrpclib.ServerProxy ('http://%s:%s@192.168.1.45:9069/prueba_auth' % (USER, PASSWORD))
 class AccountWithholding():
     'Account Withholding'
+    __metaclass__ = PoolMeta
     __name__ = 'account.withholding'
 
     estado_sri = fields.Char('Estado Facturacion-Electronica', size=24, readonly=True)
@@ -120,14 +120,8 @@ class AccountWithholding():
     @classmethod
     def __setup__(cls):
         super(AccountWithholding, cls).__setup__()
-        """
-        cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
-                'invoice_report_cache', 'invoice_report_format']
-        """
 
     def get_invoice_element_w(self):
-        """
-        """
         company = self.company
         party = self.party
         infoCompRetencion = etree.Element('infoCompRetencion')
@@ -174,8 +168,6 @@ class AccountWithholding():
         return infoTributaria
 
     def action_generate_invoice_w(self):
-        """
-        """
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
         ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquese con NODUX"
@@ -211,16 +203,7 @@ class AccountWithholding():
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-            """
-            if self.company.file_pk12:
-                archivo = self.company.file_pk12
-            else :
-                self.raise_user_error(PK12)
 
-            f = open(name_c, 'wb')
-            f.write(archivo)
-            f.close()
-            """
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -233,10 +216,7 @@ class AccountWithholding():
                 pass
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-            """
-            shutil.copy2(name_c, nuevaruta)
-            os.remove(name_c)
-            """
+
             # XML del comprobante electronico: retencion
             comprobanteRetencion1 = self.generate_xml_invoice_w()
             #validacion del xml (llama metodo validate xml de sri)
@@ -282,13 +262,6 @@ class AccountWithholding():
     def get_taxes(self):
         impuestos = etree.Element('impuestos')
         for tax in self.taxes:
-            """
-            fecha = str(self.ambiente).replace('-','/')
-            m = fecha[8:10]
-            d = fecha[5:7]
-            y = fecha[0:4]
-            """
-            print "tax.tax.code_withholding ***", tax.tax
             impuesto = etree.Element('impuesto')
             if tax.tax.code_withholding:
                 etree.SubElement(impuesto, 'codigo').text = tax.tax.code_withholding
@@ -512,16 +485,17 @@ class PrintWithholdingE(CompanyReport):
             return super(PrintWithholdingE, cls)._get_records(ids[:1], model, data)
 
     @classmethod
-    def parse(cls, report, records, data, localcontext):
+    def get_context(cls, records, data):
         pool = Pool()
         Withholding = pool.get('account.invoice')
+        report_context = super(PrintWithholdingE, cls).get_context(
+            records, data)
 
         withholding = records[0]
-        localcontext['company'] = Transaction().context.get('company')
-        localcontext['barcode_img']=cls._get_barcode_img(Withholding, withholding)
+        report_context['company'] = Transaction().context.get('company')
+        report_context['barcode_img']=cls._get_barcode_img(Withholding, withholding)
         #localcontext['invoice'] = Transaction().context.get('invoice')
-        return super(PrintWithholdingE, cls).parse(report,
-                records, data, localcontext)
+        return report_context
 
     @classmethod
     def _get_barcode_img(cls, Withholding, withholding):

@@ -46,10 +46,9 @@ import os.path
 import unicodedata
 
 __all__ = ['Invoice', 'SendSriLoteStart', 'SendSriLote','InvoiceReport']
-__metaclass__ = PoolMeta
 
 tipoDocumento = {
-    'out_invoice': '01',
+    'out': '01',
     'out_credit_note': '04',
     'out_debit_note': '05',
     'out_shipment': '06',
@@ -108,7 +107,7 @@ _CREDIT_TYPE = {
 # estructura para conexion con xmlrpc (cuando se envia directo el user y pass no se pone '')
 #s = xmlrpclib.ServerProxy ('http://%s:%s@192.168.1.45:9069/prueba_auth' % (USER, PASSWORD))
 class Invoice():
-
+    __metaclass__ = PoolMeta
     __name__ = 'account.invoice'
 
     lote = fields.Boolean(u'Envío de Facturas por Lote', states={
@@ -167,10 +166,10 @@ class Invoice():
         pool = Pool()
         Invoice = pool.get('account.invoice')
 
-        invoice = Invoice.search([('type','=', 'out_invoice'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
-        credit = Invoice.search([('type','=', 'out_credit_note'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
-        withholding = Invoice.search([('type','=', 'in_withholding'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
-        debit = Invoice.search([('type','=', 'out_debit_note'),('state','in', ('posted','paid')),('company.party.vat_number', '=', party)])
+        invoice = Invoice.search([('type','=', 'out_invoice'),('state','in', ('posted','paid')),('company.party.identifiers[0].code', '=', party)])
+        credit = Invoice.search([('type','=', 'out_credit_note'),('state','in', ('posted','paid')),('company.party.identifiers[0].code', '=', party)])
+        withholding = Invoice.search([('type','=', 'in_withholding'),('state','in', ('posted','paid')),('company.party.identifiers[0].code', '=', party)])
+        debit = Invoice.search([('type','=', 'out_debit_note'),('state','in', ('posted','paid')),('company.party.identifiers[0].code', '=', party)])
         number_invoice = 0
         number_credit = 0
         number_debit = 0
@@ -187,10 +186,7 @@ class Invoice():
                 number_withholding = number_withholding +1
             for d in debit:
                 number_debit = number_debit +1
-            """
-            for s in shipment:
-                number_shipment = number_shipment +1
-            """
+
         total_voucher= number_invoice + number_credit +number_withholding+number_debit + number_shipment
 
         return (number_invoice, number_credit, number_debit, number_withholding, number_shipment)
@@ -206,7 +202,7 @@ class Invoice():
 
         for invoice in invoices:
             invoice.limit()
-            if invoice.type == u'out_invoice' or invoice.type == u'out_credit_note':
+            if invoice.type == u'out':
                 invoice.create_move()
                 invoice.set_number()
                 moves.append(invoice.create_move())
@@ -217,7 +213,7 @@ class Invoice():
                     invoice.get_detail_element()
                     invoice.action_generate_invoice()
                     invoice.connect_db()
-            elif invoice.type == 'in_invoice':
+            elif invoice.type == 'in':
                 pool = Pool()
                 invoice.create_move()
                 if invoice.number:
@@ -277,8 +273,8 @@ class Invoice():
 
         pool = Pool()
         nombre = self.party.name
-        cedula = self.party.vat_number
-        ruc = self.company.party.vat_number
+        cedula = self.party.identifiers[0].code
+        ruc = self.company.party.identifiers[0].code
         nombre_e = self.company.party.name
         tipo = self.type
         fecha = str(self.invoice_date)
@@ -357,9 +353,22 @@ class Invoice():
         etree.SubElement(infoTributaria, 'razonSocial').text = self.company.party.name
         if self.company.party.commercial_name:
             etree.SubElement(infoTributaria, 'nombreComercial').text = self.company.party.commercial_name
-        etree.SubElement(infoTributaria, 'ruc').text = self.company.party.vat_number
+        etree.SubElement(infoTributaria, 'ruc').text = self.company.party.identifiers[0].code
         etree.SubElement(infoTributaria, 'claveAcceso').text = self.generate_access_key()
-        etree.SubElement(infoTributaria, 'codDoc').text = tipoDocumento[self.type]
+
+        if self.type == 'out':
+            cont = 1
+            if self.lines:
+                for line in self.lines:
+                    if line.quantity < 0 :
+                        cont = cont +1
+            if cont == 1:
+                codDoc = "01"
+            else:
+                codDoc = "04"
+            etree.SubElement(infoTributaria, 'codDoc').text = codDoc
+        else:
+            etree.SubElement(infoTributaria, 'codDoc').text = tipoDocumento[self.type]
         etree.SubElement(infoTributaria, 'estab').text = number[0:3]
         etree.SubElement(infoTributaria, 'ptoEmi').text = number[4:7]
         etree.SubElement(infoTributaria, 'secuencial').text = number[8:17]
@@ -380,12 +389,12 @@ class Invoice():
             etree.SubElement(infoFactura, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
         else :
             etree.SubElement(infoFactura, 'obligadoContabilidad').text = 'NO'
-        if self.party.type_document:
-            etree.SubElement(infoFactura, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        if self.party.identifiers[0].type_document:
+            etree.SubElement(infoFactura, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.identifiers[0].type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         etree.SubElement(infoFactura, 'razonSocialComprador').text = self.party.name
-        etree.SubElement(infoFactura, 'identificacionComprador').text = self.party.vat_number
+        etree.SubElement(infoFactura, 'identificacionComprador').text = self.party.identifiers[0].code
         etree.SubElement(infoFactura, 'totalSinImpuestos').text = '%.2f' % (self.untaxed_amount)
         etree.SubElement(infoFactura, 'totalDescuento').text = '0.00' #descuento esta incluido en el precio poner 0.0 por defecto
 
@@ -453,16 +462,17 @@ class Invoice():
                 codigoPorcentaje_e_o = line.product.iva_tarifa
 
             if line.product.taxes_category == True:
-                if line.product.category.taxes_parent == True:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+
+                if line.product.categories[0].taxes_parent == True:
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0].parent)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category)])
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
+                taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -545,7 +555,7 @@ class Invoice():
     def generate_access_key(self):
         f = self.invoice_date.strftime('%d%m%Y')
         t_cbte = tipoDocumento[self.type]
-        ruc = self.company.party.vat_number
+        ruc = self.company.party.identifiers[0].code
         #t_amb=proxy.SriService.get_active_env()
         t_amb="1"
         n_cbte= self.number
@@ -593,7 +603,7 @@ class Invoice():
 
         #for obj in self.browse(self.id):
             # Codigo de acceso
-        if not self.type in [ 'out_invoice', 'out_credit_note']:
+        if not self.type in [ 'out']:
             pass
         # Validar que el envio del comprobante electronico se realice dentro de las 24 horas posteriores a su emision
         pool = Pool()
@@ -613,20 +623,22 @@ class Invoice():
         access_key = self.generate_access_key()
         address_xml = self.web_service()
         s= xmlrpclib.ServerProxy(address_xml)
-        if self.type == 'out_invoice':
+        cont  = 1
+        if self.lines:
+            for line in self.lines:
+                if line.quantity < 0:
+                    cont = cont +1
+        if cont == 1:
+            i_type = 'out_invoice'
+        else:
+            i_type = 'out_credit_note'
+
+        if i_type == 'out_invoice':
             name = self.company.party.name
             name_l=name.lower()
             name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
-            """
-            if self.company.file_pk12:
-                archivo = self.company.file_pk12
-            else :
-                self.raise_user_error(PK12)
-            f = open(name_c, 'wb')
-            f.write(archivo)
-            f.close()
-            """
+
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -639,10 +651,7 @@ class Invoice():
                 pass
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-            """
-            shutil.copy2(name_c, nuevaruta)
-            os.remove(name_c)
-            """
+
             factura1 = self.generate_xml_invoice()
             factura = etree.tostring(factura1, encoding = 'utf8', method = 'xml')
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(factura, 'out_invoice', {})
@@ -658,7 +667,6 @@ class Invoice():
             signed_document= s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
 
             #envio al sri para recepcion del comprobante electronico
-
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
             if result != True:
                 self.raise_user_error(result)
@@ -677,7 +685,7 @@ class Invoice():
             self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
         else:
-            if self.type == 'out_credit_note':
+            if i_type == 'out_credit_note':
                 name = self.company.party.name
                 name_l=name.lower()
                 name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
@@ -687,11 +695,7 @@ class Invoice():
                     archivo = self.company.file_pk12
                 else :
                     self.raise_user_error(PK12)
-                """
-                f = open(name_c, 'wb')
-                f.write(archivo)
-                f.close()
-                """
+
                 authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
 
                 if authenticate == '1':
@@ -705,10 +709,7 @@ class Invoice():
                     pass
 
                 nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-                """
-                shutil.copy2(name_c, nuevaruta)
-                os.remove(name_c)
-                """
+
                 # XML del comprobante electronico: nota de credito
                 notaCredito1 = self.generate_xml_credit_note()
                 notaCredito = etree.tostring(notaCredito1, encoding = 'utf8', method = 'xml')
@@ -760,22 +761,30 @@ class Invoice():
         client = self.party.name
         client = client.upper()
         empresa_ = self.company.party.name
-        ruc = self.company.party.vat_number
+        ruc = self.company.party.identifiers[0].code
         if ahora.month < 10:
             month = '0'+ str(ahora.month)
         else:
             month = str(ahora.month)
 
         tipo_comprobante = self.type
-        if tipo_comprobante == 'out_invoice':
-            tipo = 'fact_'
-            n_tipo = "FACTURA"
+        if tipo_comprobante == 'out':
+            cont  = 1
+            if self.lines:
+                for line in self.lines:
+                    if line.quantity < 0:
+                        cont = cont + 1
+                if cont == 1:
+                    tipo = 'fact_'
+                    n_tipo = "FACTURA"
+                elif cont > 1:
+                    tipo = 'n_c_'
+                    n_tipo = "NOTA DE CREDITO"
+
         if tipo_comprobante == 'in_withholding':
             tipo = 'c_r_'
             n_tipo = "COMPROBANTE DE RETENCION"
-        if tipo_comprobante == 'out_credit_note':
-            tipo = 'n_c_'
-            n_tipo = "NOTA DE CREDITO"
+
         if tipo_comprobante == 'out_debit_note':
             tipo = 'n_d_'
             n_tipo = "NOTA DE DEBITO"
@@ -800,6 +809,7 @@ class Invoice():
         InvoiceReport = Pool().get('account.invoice', type='report')
         report = InvoiceReport.execute([self.id], {})
 
+        print "El reporte esta generado ", report
         email=''
         cont = 0
         for c in correo:
@@ -844,18 +854,18 @@ class Invoice():
             sale = s
             if sale.motivo:
                 motivo = sale.motivo
-        invoices = Invoice.search([('description', '=', sale.description), ('description', '!=', None), ('type', '=', 'out_invoice')])
+        invoices = Invoice.search([('description', '=', sale.description), ('description', '!=', None), ('type', '=', 'out')])
         for i in invoices:
             invoice = i
         infoNotaCredito = etree.Element('infoNotaCredito')
         etree.SubElement(infoNotaCredito, 'fechaEmision').text = self.invoice_date.strftime('%d/%m/%Y')
         #etree.subElement(infoNotaCredito, 'dirEstablecimiento').text = self.company.party.address[0]
-        if self.party.type_document:
-            etree.SubElement(infoNotaCredito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        if self.party.identifiers[0].type_document:
+            etree.SubElement(infoNotaCredito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.identifiers[0].type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         etree.SubElement(infoNotaCredito, 'razonSocialComprador').text = self.party.name
-        etree.SubElement(infoNotaCredito, 'identificacionComprador').text = self.party.vat_number
+        etree.SubElement(infoNotaCredito, 'identificacionComprador').text = self.party.identifiers[0].code
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
         if self.company.party.mandatory_accounting:
             etree.SubElement(infoNotaCredito, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
@@ -923,16 +933,16 @@ class Invoice():
                 codigoPorcentaje_e_o = line.product.iva_tarifa
 
             if line.product.taxes_category == True:
-                if line.product.category.taxes_parent == True:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                if line.product.categories[0].taxes_parent == True:
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0].parent)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category)])
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
+                taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -1026,13 +1036,13 @@ class Invoice():
             etree.SubElement(infoCompRetencion, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
         else :
             etree.SubElement(infoCompRetencion, 'obligadoContabilidad').text = 'NO'
-        if self.party.type_document:
-            etree.SubElement(infoCompRetencion, 'tipoIdentificacionSujetoRetenido').text = tipoIdentificacion[self.party.type_document]
+        if self.party.identifiers[0].type_document:
+            etree.SubElement(infoCompRetencion, 'tipoIdentificacionSujetoRetenido').text = tipoIdentificacion[self.party.identifiers[0].type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = 'PRUEBAS SERVICIO DE RENTAS INTERNAS'
         #self.party.name
-        etree.SubElement(infoCompRetencion, 'identificacionSujetoRetenido').text = self.party.vat_number
+        etree.SubElement(infoCompRetencion, 'identificacionSujetoRetenido').text = self.party.identifiers[0].code
         etree.SubElement(infoCompRetencion, 'periodoFiscal').text = self.move.period.start_date.strftime('%m/%Y')
         return infoCompRetencion
 
@@ -1188,12 +1198,13 @@ class Invoice():
         infoNotaDebito = etree.Element('infoNotaDebito')
         etree.SubElement(infoNotaDebito, 'fechaEmision').text = self.invoice_date.strftime('%d/%m/%Y')
         #etree.subElement(infoNotaCredito, 'dirEstablecimiento').text = self.company.party.address[0]
-        if self.party.type_document:
-            etree.SubElement(infoNotaDebito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
+        if self.party.identifiers[0].type_document:
+            etree.SubElement(infoNotaDebito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.identifiers[0].type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         etree.SubElement(infoNotaDebito, 'razonSocialComprador').text = self.party.name
-        etree.SubElement(infoNotaDebito, 'identificacionComprador').text = self.party.vat_number
+        etree.SubElement(infoNotaDebito, 'identificacionComprador').text = self.party.identifiers[0].code
+
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
         if self.company.party.mandatory_accounting:
             etree.SubElement(infoNotaDebito, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
@@ -1408,7 +1419,7 @@ class Invoice():
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
-        etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
+        etree.SubElement(lote, 'ruc').text = self.company.party.identifiers[0].code
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
             factura1 = invoice.generate_xml_invoice()
@@ -1554,7 +1565,7 @@ class Invoice():
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
-        etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
+        etree.SubElement(lote, 'ruc').text = self.company.party.identifiers[0].code
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
             comprobanteRetencion1 = self.generate_xml_invoice_w()
@@ -1666,7 +1677,7 @@ class Invoice():
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
-        etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
+        etree.SubElement(lote, 'ruc').text = self.company.party.identifiers[0].code
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
             notaDebito = self.generate_xml_debit_note()
@@ -1716,7 +1727,7 @@ class Invoice():
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
-        etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
+        etree.SubElement(lote, 'ruc').text = self.company.party.identifiers[0].code
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
             notaCredito = self.generate_xml_credit_note()
@@ -1760,7 +1771,7 @@ class Invoice():
 
         fecha = time.strftime('%d%m%Y')
         tipo_cbte = tipoDocumento[self.type]
-        ruc = self.company.party.vat_number
+        ruc = self.company.party.identifiers[0].code
         tipo_amb="1"
         n_cbte= self.number
         cod= "12345678"
@@ -1843,33 +1854,45 @@ class SendSriLote(Wizard):
         return 'end'
 
 class InvoiceReport(Report):
+    __metaclass__ = PoolMeta
     __name__ = 'account.invoice'
 
     @classmethod
-    def parse(cls, report, records, data, localcontext):
+    def get_context(cls, records, data):
         pool = Pool()
         User = pool.get('res.user')
         Invoice = pool.get('account.invoice')
 
         invoice = records[0]
+        report_context = super(InvoiceReport, cls).get_context(
+            records, data)
 
         user = User(Transaction().user)
-        localcontext['company'] = user.company
-        localcontext['vat_number'] = cls._get_vat_number(user.company)
-        if invoice.type == 'in_invoice':
+        report_context['company'] = user.company
+        report_context['vat_code'] = cls._get_vat_code(user.company)
+        if invoice.type == 'in':
             pass
         else:
-            localcontext['barcode_img']=cls._get_barcode_img(Invoice, invoice)
-        localcontext['vat_number_cliente'] = cls._get_vat_number_cliente(Invoice, invoice)
-        localcontext['subtotal_12'] = cls._get_subtotal_12(Invoice, invoice)
-        localcontext['subtotal_0'] = cls._get_subtotal_0(Invoice, invoice)
-        localcontext['subtotal_14'] = cls._get_subtotal_14(Invoice, invoice)
-        localcontext['numero'] = cls._get_numero(Invoice, invoice)
-        localcontext['fecha'] = cls._get_fecha(Invoice, invoice)
-        localcontext['motivo'] = cls._get_motivo(Invoice, invoice)
+            report_context['barcode_img']=cls._get_barcode_img(Invoice, invoice)
+        report_context['vat_code_cliente'] = cls._get_vat_code_cliente(Invoice, invoice)
+        report_context['subtotal_12'] = cls._get_subtotal_12(Invoice, invoice)
+        report_context['subtotal_0'] = cls._get_subtotal_0(Invoice, invoice)
+        report_context['subtotal_14'] = cls._get_subtotal_14(Invoice, invoice)
+        report_context['numero'] = cls._get_numero(Invoice, invoice)
+        report_context['fecha'] = cls._get_fecha(Invoice, invoice)
+        if invoice.type == 'out':
+            cont  = 1
+            if invoice.lines:
+                for line in invoice.lines:
+                    if line.quantity < 1:
+                        cont = cont + 1
+                if cont == 1:
+                    report_context['tipo'] = 'out_invoice'
+                else:
+                    report_context['motivo'] = cls._get_motivo(Invoice, invoice)
+                    report_context['tipo'] = 'out_credit_note'
 
-        return super(InvoiceReport, cls).parse(report, records, data,
-                localcontext=localcontext)
+        return report_context
 
     @classmethod
     def _get_numero(cls, Invoice, invoice):
@@ -1917,15 +1940,15 @@ class InvoiceReport(Report):
         return motivo
 
     @classmethod
-    def _get_vat_number_cliente(cls, Invoice, invoice):
-        value = invoice.party.vat_number
+    def _get_vat_code_cliente(cls, Invoice, invoice):
+        value = invoice.party.identifiers[0].code
         if value:
             return '%s-%s-%s' % (value[:2], value[2:-1], value[-1])
         return ''
 
     @classmethod
-    def _get_vat_number(cls, company):
-        value = company.party.vat_number
+    def _get_vat_code(cls, company):
+        value = company.party.identifiers[0].code
         return '%s-%s-%s' % (value[:2], value[2:-1], value[-1])
 
 
@@ -1951,16 +1974,16 @@ class InvoiceReport(Report):
 
         for line in invoice.lines:
             if line.product.taxes_category == True:
-                if line.product.category.taxes_parent == True:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                if line.product.categories[0].taxes_parent == True:
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0].parent)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category)])
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
+                taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -1986,16 +2009,16 @@ class InvoiceReport(Report):
         Taxes2 = pool.get('product.template-customer-account.tax')
         for line in invoice.lines:
             if line.product.taxes_category == True:
-                if line.product.category.taxes_parent == True:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                if line.product.categories[0].taxes_parent == True:
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0].parent)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category)])
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
+                taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -2023,16 +2046,16 @@ class InvoiceReport(Report):
 
         for line in invoice.lines:
             if line.product.taxes_category == True:
-                if line.product.category.taxes_parent == True:
-                    taxes1= Taxes1.search([('category','=', line.product.category.parent)])
+                if line.product.categories[0].taxes_parent == True:
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0].parent)])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category)])
+                    taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
+                taxes1= Taxes1.search([('category','=', line.product.categories[0])])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 

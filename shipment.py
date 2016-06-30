@@ -50,7 +50,6 @@ s = xmlrpclib.ServerProxy ('http://%s:%s@192.168.1.45:7069/pruebasfacturacion' %
 
 
 __all__ = ['ShipmentOut','SendSriLoteStartShipment', 'SendSriLoteShipment', 'PrintShipmentE']
-__metaclass__ = PoolMeta
 
 tipoDocumento = {
     'out_invoice': '01',
@@ -102,7 +101,7 @@ tipoProvedor = {
 }
 
 class ShipmentOut():
-    "Customer Shipment"
+    __metaclass__ = PoolMeta
     __name__ = 'stock.shipment.out'
 
     remision = fields.Boolean(u'Enviar Guía de Remisión al SRI', states={
@@ -156,7 +155,6 @@ class ShipmentOut():
     #metodo para asignar impuesto
     @fields.depends('moves', 'remision', 'number_c')
     def on_change_remision(self):
-        res = {}
         venta = None
         invoices = None
         invoice = None
@@ -170,11 +168,9 @@ class ShipmentOut():
                 for i in invoices:
                     invoice = i
             if invoice:
-                res['number_c'] = invoice.number
+                self.number_c = invoice.number
             else:
-                res['number_c'] = None
-        return res
-
+                self.number_c = None
 
     @classmethod
     @ModelView.button
@@ -733,27 +729,30 @@ class PrintShipmentE(CompanyReport):
             return super(PrintShipmentE, cls)._get_records(ids[:1], model, data)
 
     @classmethod
-    def parse(cls, report, records, data, localcontext):
+    def get_context(cls, records, data):
         pool = Pool()
+
+        report_context = super(PrintShipmentE, cls).get_context(
+            records, data)
+
         Shipment = pool.get('stock.shipment.out')
         shipment = records[0]
 
         num_mod=shipment.number_c
-        pool = Pool()
         Invoices = pool.get('account.invoice')
         invoices = Invoices.search([('number','=',num_mod)])
         if invoices:
             for i in invoices:
                 invoice = i
         if invoice:
-            localcontext['invoice'] = invoice
-        localcontext['company'] = Transaction().context.get('company')
+            report_context['invoice'] = invoice
+        report_context['company'] = Transaction().context.get('company')
         if shipment.numero_autorizacion:
-            localcontext['barcode_img']= cls._get_barcode_img(Shipment, shipment)
+            report_context['barcode_img']= cls._get_barcode_img(Shipment, shipment)
         else:
             pass
         #localcontext['invoice'] = Transaction().context.get('invoice')
-        return super(PrintShipmentE, cls).parse(report, records, data, localcontext)
+        return report_context
 
     @classmethod
     def _get_barcode_img(cls, Shipment, shipment):

@@ -12,7 +12,6 @@ from trytond.transaction import Transaction
 from trytond.pool import Pool, PoolMeta
 
 __all__ = ['TaxElectronic', 'TaxSpecial', 'Tax']
-__metaclass__ = PoolMeta
 
 _IMPUESTO = [
     ('', ''),
@@ -68,6 +67,7 @@ class TaxSpecial(ModelSQL, ModelView):
             return self.name
 
 class Tax(ModelSQL, ModelView):
+    __metaclass__ = PoolMeta
     __name__ = 'account.tax'
 
     code_electronic = fields.Many2One('account.tax.electronic', "Codigo para Retencion-Comprobantes Electronicos",
@@ -85,12 +85,10 @@ class Tax(ModelSQL, ModelView):
     #metodo para asignar impuesto
     @fields.depends('code_electronic', 'code_withholding')
     def on_change_code_electronic(self):
-        res = {}
         if self.code_electronic:
             if 'IVA' in self.code_electronic.name:
                 code = '2'
-                res['code_withholding'] = code
+                self.code_withholding = code
             else:
                 code = '1'
-                res['code_withholding'] = code
-        return res
+                self.code_withholding = code

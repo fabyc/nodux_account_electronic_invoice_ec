@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <data>
     <xpath expr="/form/notebook/page[@id='payment']" position="after">
-        <page string="Facturacion Electronica Ecuador" id="electronic_invoice"
-            states="{'invisible': Eval('type').in_(['in_credit_note','anticipo','out_withholding'])}">
+        <page string="Facturacion Electronica Ecuador" id="electronic_invoice">
             <label name="lote"/>
             <field name="lote"/>
              <newline />

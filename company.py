@@ -2,7 +2,6 @@
 import copy
 import string
 import random
-
 from trytond.model import ModelView, ModelSQL, fields, Workflow
 from trytond.pyson import Eval
 from trytond.pool import Pool, PoolMeta
@@ -11,9 +10,8 @@ import base64
 
 __all__ = ['Company']
 
-__metaclass__ = PoolMeta
-
 class Company(ModelSQL, ModelView):
+    __metaclass__ = PoolMeta
     __name__ = 'company.company'
 
     emission_code = fields.Selection([

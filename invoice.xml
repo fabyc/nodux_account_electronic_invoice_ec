@@ -7,7 +7,6 @@
             <field name="model">account.invoice</field>
             <field name="report_name">account.invoice</field>
             <field name="report">nodux_account_electronic_invoice_ec/invoice.odt</field>
-            <field name="style">nodux_account_electronic_invoice_ec/header_A4.odt</field>
         </record>
 
         <!-- Send sri lote-->
@@ -30,13 +29,11 @@
         <!-- vistas-->
         <record model="ir.ui.view" id="invoice_view_form">
             <field name="model">account.invoice</field>
-            <field name="type">form</field>
             <field name="inherit" ref="account_invoice.invoice_view_form"/>
             <field name="name">invoice_form</field>
         </record>
         <record model="ir.ui.view" id="invoice_view_tree">
             <field name="model">account.invoice</field>
-            <field name="type">tree</field>
             <field name="inherit" ref="account_invoice.invoice_view_tree"/>
             <field name="name">invoice_tree</field>
         </record>

@@ -11,7 +11,6 @@ from trytond.transaction import Transaction
 import re
 
 __all__ = ['Party']
-__metaclass__ = PoolMeta
 
 STATES = {
     'readonly': ~Eval('active', True),
@@ -20,11 +19,12 @@ STATES = {
 DEPENDS = ['active']
 
 class Party:
+    __metaclass__ = PoolMeta
     __name__ = 'party.party'
-    
+
     contact_mechanisms2 = fields.One2Many('party.contact_mechanism', 'party',
         'Contact Mechanisms', states=STATES, depends=DEPENDS, help = u'Requerido ingresar un correo electronico')
-    
+
     @classmethod
     def __setup__(cls):
         super(Party, cls).__setup__()
@@ -37,7 +37,7 @@ class Party:
         super(Party, cls).validate(parties)
         for party in parties:
             party.validate_email()
-            
+
     def validate_email(self):
         correo = ''
         correos = self.contact_mechanisms

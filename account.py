@@ -6,11 +6,10 @@ from trytond.pool import Pool, PoolMeta
 from trytond.transaction import Transaction
 
 __all__ = ['Configuration']
-__metaclass__ = PoolMeta
 
 
 class Configuration:
-    'Account Configuration'
+    __metaclass__ = PoolMeta
     __name__ = 'account.configuration'
 
     lote = fields.Boolean('Enviar comprobantes por lote')
