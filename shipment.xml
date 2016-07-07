@@ -36,10 +36,10 @@
             <field name="name">RIDE Guía de Remisión</field>
             <field name="model">stock.shipment.out</field>
             <field name="report_name">stock.shipment.out.print_shipment_e</field>
-            <field name="report">nodux_account_electronic_invoice_ec/delivery_note.odt</field>
+            <field name="report">nodux_account_electronic_invoice_ec/remission_guide.odt</field>
             <field name="style"></field>
         </record>
-        
+
         <record model="ir.action.keyword" id="report_shipment_e_keyword">
            <field name="keyword">form_print</field>
            <field name="model">stock.shipment.out,-1</field>

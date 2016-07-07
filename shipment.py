@@ -175,7 +175,6 @@ class ShipmentOut():
                 res['number_c'] = None
         return res
 
-
     @classmethod
     @ModelView.button
     @Workflow.transition('done')
