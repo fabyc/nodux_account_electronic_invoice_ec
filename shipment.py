@@ -318,7 +318,7 @@ class ShipmentOut():
         fecha = self.create_date.strftime('%d%m%Y')
         tipo_cbte = '06'
         ruc = self.company.party.vat_number
-        tipo_amb='1'
+        tipo_amb=self.company.tipo_de_ambiente
         num_cbte= self.code
         cod_num= "13245768"
         tipo_emision= self.company.emission_code
@@ -349,7 +349,7 @@ class ShipmentOut():
         number = self.code
         #auth = self.journal_id.auth_id
         infoTributaria = etree.Element('infoTributaria')
-        etree.SubElement(infoTributaria, 'ambiente').text = "1"
+        etree.SubElement(infoTributaria, 'ambiente').text = self.company.tipo_de_ambiente
         #SriService.get_active_env()
 
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
