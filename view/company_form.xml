@@ -3,6 +3,11 @@
     <xpath expr="/form/notebook/page[@id='reports']" position="after">
         <page string="NODUX WS" id="sri">
             <newline/>
+            <separator string="Tipo de Ambiente" id='ambiente'/>
+            <newline/>
+            <label name="tipo_de_ambiente"/>
+            <field name="tipo_de_ambiente"/>
+            <newline/>
             <separator string="Usuario y password de autenticacion" id='auth'/>
             <newline/>
             <label name="user"/>
