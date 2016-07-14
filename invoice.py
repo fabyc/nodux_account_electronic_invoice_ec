@@ -130,7 +130,14 @@ class Invoice():
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
-                'invoice_report_cache', 'invoice_report_format']
+                'invoice_report_cache', 'invoice_report_format', 'move']
+        cls._transitions |= set((('posted', 'draft'),))
+        cls._buttons.update({
+                'draft': {
+                    'invisible': (Eval('state').in_(['draft', 'paid'])
+                        | ((Eval('state') == 'cancel') & Eval('cancel_move'))),
+                    },
+                })
 
     def _credit(self):
         '''
@@ -237,12 +244,16 @@ class Invoice():
                     withholdings = Withholding.search([('number'), '=', invoice.ref_withholding])
                     for withholding in withholdings:
                     #invoice.authenticate()
-                        withholding.get_invoice_element_w()
-                        withholding.get_tax_element()
-                        withholding.generate_xml_invoice_w()
-                        withholding.get_taxes()
-                        withholding.action_generate_invoice_w()
-                        withholding.connect_db()
+                        if withholding.fisic == True:
+                            pass
+                        else:
+                            withholding.get_invoice_element_w()
+                            withholding.get_tax_element()
+                            withholding.generate_xml_invoice_w()
+                            withholding.get_taxes()
+                            withholding.action_generate_invoice_w()
+                            withholding.connect_db()
+
             elif invoice.type == 'out_debit_note':
                 invoice.create_move()
                 invoice.set_number()

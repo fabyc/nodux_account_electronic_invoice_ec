@@ -116,6 +116,10 @@ class AccountWithholding():
     path_xml = fields.Char(u'Path archivo xml de comprobante', readonly=True)
     path_pdf = fields.Char(u'Path archivo pdf de comprobante', readonly=True)
     numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
+    fisic = fields.Boolean('Fisic Invoice', states={
+            'invisible': Eval('type') != 'in_withholding',
+            'readonly' : Eval('state') != 'draft'
+            })
 
     @classmethod
     def __setup__(cls):
@@ -124,6 +128,24 @@ class AccountWithholding():
         cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
                 'invoice_report_cache', 'invoice_report_format']
         """
+        cls.number.states['readonly'] = ~Eval('fisic',True)
+
+    @classmethod
+    @ModelView.button
+    def validate_withholding(cls, withholdings):
+        for withholding in withholdings:
+            if withholding.type in ('in_withholding'):
+                Invoice = Pool().get('account.invoice')
+                invoices = Invoice.search([('number','=',withholding.reference), ('number','!=', None)])
+                for i in invoices:
+                    invoice = i
+                if withholding.fisic == True:
+                    pass
+                else:
+                    withholding.set_number()
+                invoice.write([invoice],{ 'ref_withholding': withholding.number})
+            withholding.write([withholding],{'total_amount2':(withholding.total_amount*-1)})
+        cls.write(withholdings, {'state': 'validated'})
 
     def get_invoice_element_w(self):
         """
