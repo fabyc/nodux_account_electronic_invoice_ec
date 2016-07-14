@@ -132,12 +132,6 @@ class Invoice():
         cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
                 'invoice_report_cache', 'invoice_report_format', 'move']
         cls._transitions |= set((('posted', 'draft'),))
-        cls._buttons.update({
-                'draft': {
-                    'invisible': (Eval('state').in_(['draft', 'paid'])
-                        | ((Eval('state') == 'cancel') & Eval('cancel_move'))),
-                    },
-                })
 
     def _credit(self):
         '''
