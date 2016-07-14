@@ -45,6 +45,7 @@ import shutil
 import os.path
 import unicodedata
 from trytond.modules.company import CompanyReport
+import re
 
 __all__ = ['AccountWithholding', 'PrintWithholdingE']
 __metaclass__ = PoolMeta
@@ -147,6 +148,16 @@ class AccountWithholding():
             withholding.write([withholding],{'total_amount2':(withholding.total_amount*-1)})
         cls.write(withholdings, {'state': 'validated'})
 
+    def replace_charter(self, cadena):
+        reemplazo = {u"Â":"A", u"Á":"A", u"À":"A", u"Ä":"A", u"É":"E", u"È":"E", u"Ê":"E",u"Ë":"E",
+            u"Í":"I",u"Ì":"I",u"Î":"I",u"Ï":"I",u"Ó":"O",u"Ò":"O",u"Ö":"O",u"Ô":"O",u"Ú":"U",u"Ù":"U",u"Ü":"U",
+            u"Û":"U",u"á":"a",u"à":"a",u"â":"a",u"ä":"a",u"é":"e",u"è":"e",u"ê":"e",u"ë":"e",u"í":"i",u"ì":"i",
+            u"ï":"i",u"î":"i",u"ó":"o",u"ò":"o",u"ô":"o",u"ö":"o",u"ú":"u",u"ù":"u",u"ü":"u",u"û":"u",u"ñ":"n",
+            u"Ñ":"N"}
+        regex = re.compile("(%s)" % "|".join(map(re.escape, reemplazo.keys())))
+        nueva_cadena = regex.sub(lambda x: str(reemplazo[x.string[x.start():x.end()]]), cadena)
+        return nueva_cadena
+
     def get_invoice_element_w(self):
         """
         """
@@ -166,10 +177,9 @@ class AccountWithholding():
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         if self.party.commercial_name:
-            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.party.commercial_name
+            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.replace_charter(self.party.commercial_name) #self.party.commercial_name
         else:
-            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.party.name
-        #self.party.name
+            etree.SubElement(infoCompRetencion, 'razonSocialSujetoRetenido').text = self.replace_charter(self.party.name) #self.party.name
         etree.SubElement(infoCompRetencion, 'identificacionSujetoRetenido').text = self.party.vat_number
         etree.SubElement(infoCompRetencion, 'periodoFiscal').text = self.move.period.start_date.strftime('%m/%Y')
         return infoCompRetencion
@@ -182,9 +192,9 @@ class AccountWithholding():
         etree.SubElement(infoTributaria, 'ambiente').text = '1'
         #proxy.SriService.get_active_env()
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
-        etree.SubElement(infoTributaria, 'razonSocial').text = self.company.party.name
+        etree.SubElement(infoTributaria, 'razonSocial').text = self.replace_charter(self.company.party.name) #self.company.party.name
         if self.company.party.commercial_name:
-            etree.SubElement(infoTributaria, 'nombreComercial').text = self.company.party.commercial_name
+            etree.SubElement(infoTributaria, 'nombreComercial').text = self.replace_charter(self.company.party.commercial_name) #self.company.party.commercial_name
         etree.SubElement(infoTributaria, 'ruc').text = self.company.party.vat_number
         etree.SubElement(infoTributaria, 'claveAcceso').text = self.generate_access_key()
         etree.SubElement(infoTributaria, 'codDoc').text = tipoDocumento[self.type]
@@ -231,18 +241,10 @@ class AccountWithholding():
         if self.type == 'in_withholding':
             name = self.company.party.name
             name_l=name.lower()
-            name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_l=name_l.replace(' ','_')
+            name_r = self.replace_charter(name_l)
             name_c = name_r+'.p12'
-            """
-            if self.company.file_pk12:
-                archivo = self.company.file_pk12
-            else :
-                self.raise_user_error(PK12)
 
-            f = open(name_c, 'wb')
-            f.write(archivo)
-            f.close()
-            """
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -255,10 +257,7 @@ class AccountWithholding():
                 pass
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-            """
-            shutil.copy2(name_c, nuevaruta)
-            os.remove(name_c)
-            """
+
             # XML del comprobante electronico: retencion
             comprobanteRetencion1 = self.generate_xml_invoice_w()
             #validacion del xml (llama metodo validate xml de sri)
@@ -424,15 +423,13 @@ class AccountWithholding():
     def send_mail_invoice(self, xml_element, access_key, send_m, s, server="localhost"):
         MAIL= u"Ud no ha configurado el correo del cliente. Diríjase a: \nTerceros->General->Medios de Contacto"
         pool = Pool()
-        empresa = self.elimina_tildes(self.company.party.name)
-        #empresa = unicode(empresa, 'utf-8')
-        empresa = str(self.elimina_tildes(empresa))
+        empresa = self.replace_charter(self.company.party.name) #self.elimina_tildes(self.company.party.name)
         empresa = empresa.replace(' ','_')
         empresa = empresa.lower()
 
         ahora = datetime.datetime.now()
         year = str(ahora.year)
-        client = self.party.name
+        client = self.replace_charter(self.party.name) #self.party.name
         client = client.upper()
         empresa_ = self.company.party.name
         ruc = self.company.party.vat_number
