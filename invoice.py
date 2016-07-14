@@ -221,32 +221,34 @@ class Invoice():
                     invoice.connect_db()
             elif invoice.type == 'in_invoice':
                 pool = Pool()
+                Module = pool.get('ir.module.module')
+                module = Module.search([('name', '=', 'nodux_account_withholding_in_ec'), ('state', '=', 'installed')])
                 invoice.create_move()
                 if invoice.number:
                     pass
                 else:
                     invoice.set_number()
                 moves.append(invoice.create_move())
-                Configuration = pool.get('account.configuration')
+                if module:
+                    Configuration = pool.get('account.configuration')
+                    w = False
+                    if Configuration(1).lote != None:
+                        w = Configuration(1).lote
 
-                w = False
-                if Configuration(1).lote != None:
-                    w = Configuration(1).lote
-
-                if w == False:
-                    Withholding = Pool().get('account.withholding')
-                    withholdings = Withholding.search([('number'), '=', invoice.ref_withholding])
-                    for withholding in withholdings:
-                    #invoice.authenticate()
-                        if withholding.fisic == True:
-                            pass
-                        else:
-                            withholding.get_invoice_element_w()
-                            withholding.get_tax_element()
-                            withholding.generate_xml_invoice_w()
-                            withholding.get_taxes()
-                            withholding.action_generate_invoice_w()
-                            withholding.connect_db()
+                    if w == False:
+                        Withholding = Pool().get('account.withholding')
+                        withholdings = Withholding.search([('number'), '=', invoice.ref_withholding])
+                        for withholding in withholdings:
+                        #invoice.authenticate()
+                            if withholding.fisic == True:
+                                pass
+                            else:
+                                withholding.get_invoice_element_w()
+                                withholding.get_tax_element()
+                                withholding.generate_xml_invoice_w()
+                                withholding.get_taxes()
+                                withholding.action_generate_invoice_w()
+                                withholding.connect_db()
 
             elif invoice.type == 'out_debit_note':
                 invoice.create_move()
