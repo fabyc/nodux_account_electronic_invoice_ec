@@ -125,6 +125,10 @@ class Invoice():
     path_xml = fields.Char(u'Path archivo xml de comprobante', readonly=True)
     path_pdf = fields.Char(u'Path archivo pdf de factura', readonly=True)
     numero_autorizacion = fields.Char(u'Número de Autorización')
+    fisic_invoice = fields.Boolean('Fisic Invoice', states={
+            'readonly' : Eval('state')!= 'draft',
+            'invisible' : Eval('type') != 'out_invoice',
+            })
 
     @classmethod
     def __setup__(cls):
@@ -202,7 +206,7 @@ class Invoice():
     @ModelView.button
     @Workflow.transition('posted')
     def post(cls, invoices):
-        print "Metodo post de facturacion electronica"
+        print "Metodo normal de facturacion electronica"
         Move = Pool().get('account.move')
         moves = []
 
@@ -210,15 +214,18 @@ class Invoice():
             invoice.limit()
             if invoice.type == u'out_invoice' or invoice.type == u'out_credit_note':
                 invoice.create_move()
-                invoice.set_number()
                 moves.append(invoice.create_move())
-                if invoice.lote == False:
-                    invoice.get_invoice_element()
-                    invoice.get_tax_element()
-                    invoice.generate_xml_invoice()
-                    invoice.get_detail_element()
-                    invoice.action_generate_invoice()
-                    invoice.connect_db()
+                if invoice.fisic_invoice == True:
+                    pass
+                else:
+                    invoice.set_number()
+                    if invoice.lote == False:
+                        invoice.get_invoice_element()
+                        invoice.get_tax_element()
+                        invoice.generate_xml_invoice()
+                        invoice.get_detail_element()
+                        invoice.action_generate_invoice()
+                        invoice.connect_db()
             elif invoice.type == 'in_invoice':
                 pool = Pool()
                 Module = pool.get('ir.module.module')
