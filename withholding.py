@@ -117,7 +117,7 @@ class AccountWithholding():
     path_xml = fields.Char(u'Path archivo xml de comprobante', readonly=True)
     path_pdf = fields.Char(u'Path archivo pdf de comprobante', readonly=True)
     numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
-    fisic = fields.Boolean('Fisic Invoice', states={
+    fisic = fields.Boolean('Fisic Withholding', states={
             'invisible': Eval('type') != 'in_withholding',
             'readonly' : Eval('state') != 'draft'
             })
@@ -130,6 +130,7 @@ class AccountWithholding():
                 'invoice_report_cache', 'invoice_report_format']
         """
         cls.number.states['readonly'] = ~Eval('fisic',True)
+        cls.number.states['required'] = Eval('fisic',True)
 
     @classmethod
     @ModelView.button
