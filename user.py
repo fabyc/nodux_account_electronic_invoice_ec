@@ -26,7 +26,7 @@ class User:
     
     usuario_c = fields.Function(fields.Char('Usuario de la Base de Datos'), getter='get_user', setter='set_user')
     name_db_c = fields.Function(fields.Char('Nombre de la Base de Datos'), getter='get_name', setter='set_name')
-    pass_db_c = fields.Function(fields.Char('Password de la Base de Datos'), getter='get_password', setter='set_password')
+    pass_db_c = fields.Function(fields.Char('Password de la Base de Datos'), getter='get_password_db', setter='set_password_db')
     
     @classmethod
     def __setup__(cls):
@@ -36,11 +36,11 @@ class User:
     def default_cabecera():
         return 'http'
         
-    def get_password(self, name):
+    def get_password_db(self, name):
         return 'x' * 10
 
     @classmethod
-    def set_password(cls, users, name, value):
+    def set_password_db(cls, users, name, value):
         if value == 'x' * 10:
             return
         to_write = []

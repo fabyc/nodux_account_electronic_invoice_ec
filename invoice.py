@@ -707,15 +707,6 @@ class Invoice():
                 name_r = self.replace_charter(name_l)
                 name_c = name_r+'.p12'
 
-                if self.company.file_pk12:
-                    archivo = self.company.file_pk12
-                else :
-                    self.raise_user_error(PK12)
-                """
-                f = open(name_c, 'wb')
-                f.write(archivo)
-                f.close()
-                """
                 authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
 
                 if authenticate == '1':
@@ -753,7 +744,7 @@ class Invoice():
                     self.raise_user_error(result)
                 time.sleep(WAIT_FOR_RECEIPT)
                 # solicitud al SRI para autorizacion del comprobante electronico
-                doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_l, 'out_credit_note',{})
+                doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_l, 'out_credit_note', signed_document, {})
                 if doc_xml is None:
                     msg = ' '.join(m)
                     raise m
