@@ -15,7 +15,6 @@
             <label name="password"/>
             <field name="password" widget="password"/>
             <newline/>
-            <newline/>
             <separator string="Firma Digital" id='firma'/>
             <newline/>
             <!--label name="file_pk12"/>

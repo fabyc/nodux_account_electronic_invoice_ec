@@ -12,6 +12,7 @@ from .withholding import *
 from .account import *
 def register():
     Pool.register(
+        FormaPago,
         Party,
         Invoice,
         SendSriLoteStart,

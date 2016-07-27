@@ -129,6 +129,7 @@ class Invoice():
             'readonly' : Eval('state')!= 'draft',
             'invisible' : Eval('type') != 'out_invoice',
             })
+    formas_pago_sri = fields.Many2One('account.formas_pago', 'Formas de Pago SRI')
 
     @classmethod
     def __setup__(cls):
@@ -318,7 +319,8 @@ class Invoice():
         email_e= to_email_2
         email = to_email
         total = str(self.total_amount)
-        s.model.nodux_electronic_invoice_auth.conexiones.connect_db( nombre, cedula, ruc, nombre_e, tipo, fecha, empresa, numero, path_xml, path_pdf,estado, auth, email, email_e, total, {})
+        if self.estado_sri == 'AUTORIZADO':
+            s.model.nodux_electronic_invoice_auth.conexiones.connect_db( nombre, cedula, ruc, nombre_e, tipo, fecha, empresa, numero, path_xml, path_pdf,estado, auth, email, email_e, total, {})
 
     def get_ventas(self):
         pool = Pool()
@@ -416,6 +418,8 @@ class Invoice():
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
         etree.SubElement(infoFactura, 'razonSocialComprador').text = self.replace_charter(self.party.name)
         etree.SubElement(infoFactura, 'identificacionComprador').text = self.party.vat_number
+        if self.party.addresses:
+            etree.SubElement(infoFactura, 'direccionComprador').text = self.party.addresses[0].street
         etree.SubElement(infoFactura, 'totalSinImpuestos').text = '%.2f' % (self.untaxed_amount)
         etree.SubElement(infoFactura, 'totalDescuento').text = '0.00' #descuento esta incluido en el precio poner 0.0 por defecto
 
@@ -426,7 +430,6 @@ class Invoice():
             #if tax.tax_group in ['vat', 'vat0', 'ice', 'other']:
             totalImpuesto = etree.Element('totalImpuesto')
             #de acuerdo a niif
-
             if str('{:.0f}'.format(tax.tax.rate*100)) == '12':
                 codigoPorcentaje = '2'
                 codigo = '2'
@@ -448,6 +451,34 @@ class Invoice():
         etree.SubElement(infoFactura, 'propina').text = '0.00'
         etree.SubElement(infoFactura, 'importeTotal').text = '{:.2f}'.format(self.total_amount)
         etree.SubElement(infoFactura, 'moneda').text = 'DOLAR'
+        pagos = etree.Element('pagos')
+        pago = etree.Element('pago')
+        etree.SubElement(pago, 'formaPago').text = self.formas_pago_sri.code
+        etree.SubElement(pago, 'total').text = '{:.2f}'.format(self.total_amount)
+        if self.payment_term:
+            day = 0
+            month = 0
+            week = 0
+            for l in self.payment_term.lines:
+                if l.days:
+                    print "Dias", l.days
+                    day += l.days
+                if l.months:
+                    month += l.months
+                if l.weeks:
+                    week += l.weeks
+                if day >= 0 :
+                    etree.SubElement(pago, 'plazo').text = str(day)
+                    etree.SubElement(pago, 'unidadTiempo').text = 'dias'
+                if month > 0:
+                    etree.SubElement(pago, 'plazo').text = str(month)
+                    etree.SubElement(pago, 'unidadTiempo').text = 'meses'
+                if week > 0:
+                    etree.SubElement(pago, 'plazo').text = str(month)
+                    etree.SubElement(pago, 'unidadTiempo').text = 'semanas'
+
+        pagos.append(pago)
+        infoFactura.append(pagos)
 
         return infoFactura
 
@@ -694,10 +725,11 @@ class Invoice():
                 raise m
 
             if auth == 'NO AUTORIZADO':
-                self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
+                self.write([self],{ 'estado_sri': 'NO AUTORIZADO', 'mensaje':doc_xml})
+
             else:
-                pass
-            self.send_mail_invoice(doc_xml, access_key, send_m, s)
+                self.write([self],{ 'estado_sri': 'AUTORIZADO'})
+                self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
         else:
             if self.type == 'out_credit_note':
@@ -724,6 +756,7 @@ class Invoice():
                 shutil.copy2(name_c, nuevaruta)
                 os.remove(name_c)
                 """
+
                 # XML del comprobante electronico: nota de credito
                 notaCredito1 = self.generate_xml_credit_note()
                 notaCredito = etree.tostring(notaCredito1, encoding = 'utf8', method = 'xml')
@@ -738,24 +771,24 @@ class Invoice():
                 if error == '1':
                     self.raise_user_error('No se ha encontrado el archivo de firma digital (.p12)')
                 signed_document = s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(notaCredito, file_pk12, password,{})
+
                 #envio al sri para recepcion del comprobante electronico
                 result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
                 if result != True:
                     self.raise_user_error(result)
                 time.sleep(WAIT_FOR_RECEIPT)
                 # solicitud al SRI para autorizacion del comprobante electronico
-                doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_l, 'out_credit_note', signed_document, {})
+                doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_r, 'out_credit_note', signed_document, {})
                 if doc_xml is None:
                     msg = ' '.join(m)
                     raise m
 
-                if auth == False:
-                    self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
-                    self.raise_user_error(m)
+                if auth == 'NO AUTORIZADO':
+                    self.write([self],{ 'estado_sri': 'NO AUTORIZADO', 'mensaje':doc_xml})
                 else:
-                    pass
+                    self.write([self],{ 'estado_sri': 'AUTORIZADO'})
+                    self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
-                self.send_mail_invoice(doc_xml,access_key, send_m, s)
         return access_key
 
     def elimina_tildes(self,s):
@@ -808,7 +841,7 @@ class Invoice():
         nuevaruta = nr +empresa+'/'+year+'/'+month +'/'
 
         new_save = 'comprobantes/'+empresa+'/'+year+'/'+month +'/'
-        self.write([self],{'estado_sri': 'AUTORIZADO', 'path_xml': new_save+name_xml,'numero_autorizacion' : access_key, 'path_pdf':new_save+name_pdf})
+        self.write([self],{'path_xml': new_save+name_xml,'numero_autorizacion' : access_key, 'path_pdf':new_save+name_pdf})
 
         correos = pool.get('party.contact_mechanism')
         correo = correos.search([('type','=','email')])

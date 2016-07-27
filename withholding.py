@@ -290,12 +290,10 @@ class AccountWithholding():
                 raise m
 
             if auth == 'NO AUTORIZADO':
-                self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
-                #self.raise_user_error(m)
+                self.write([self],{ 'estado_sri': 'NO AUTORIZADO', 'mensaje':doc_xml})
             else:
-                pass
-
-            self.send_mail_invoice(doc_xml, access_key, send_m, s)
+                self.write([self],{ 'estado_sri': 'AUTORIZADO'})
+                self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
             return access_key
 
@@ -415,7 +413,8 @@ class AccountWithholding():
         email_e= to_email_2
         email = to_email
         total = str(self.total_amount)
-        s.model.nodux_electronic_invoice_auth.conexiones.connect_db( nombre, cedula, ruc, nombre_e, tipo, fecha, empresa, numero, path_xml, path_pdf,estado, auth, email, email_e, total, {})
+        if self.estado_sri == 'AUTORIZADO':
+            s.model.nodux_electronic_invoice_auth.conexiones.connect_db( nombre, cedula, ruc, nombre_e, tipo, fecha, empresa, numero, path_xml, path_pdf,estado, auth, email, email_e, total, {})
 
     def elimina_tildes(self,s):
         return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
@@ -466,7 +465,7 @@ class AccountWithholding():
         nuevaruta = nr +empresa+'/'+year+'/'+month +'/'
 
         new_save = 'comprobantes/'+empresa+'/'+year+'/'+month +'/'
-        self.write([self],{'estado_sri': 'AUTORIZADO', 'path_xml': new_save+name_xml,'numero_autorizacion' : access_key, 'path_pdf':new_save+name_pdf})
+        self.write([self],{'path_xml': new_save+name_xml,'numero_autorizacion' : access_key, 'path_pdf':new_save+name_pdf})
 
         correos = pool.get('party.contact_mechanism')
         correo = correos.search([('type','=','email')])
