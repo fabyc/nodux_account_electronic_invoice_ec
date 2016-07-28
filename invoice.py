@@ -368,7 +368,7 @@ class Invoice():
             self.raise_user_error(LIMIT_EXCEEDED)
         return total_ventas
 
-    def replace_charter(self, cadena):
+    def replace_character(self, cadena):
         reemplazo = {u"Â":"A", u"Á":"A", u"À":"A", u"Ä":"A", u"É":"E", u"È":"E", u"Ê":"E",u"Ë":"E",
             u"Í":"I",u"Ì":"I",u"Î":"I",u"Ï":"I",u"Ó":"O",u"Ò":"O",u"Ö":"O",u"Ô":"O",u"Ú":"U",u"Ù":"U",u"Ü":"U",
             u"Û":"U",u"á":"a",u"à":"a",u"â":"a",u"ä":"a",u"é":"e",u"è":"e",u"ê":"e",u"ë":"e",u"í":"i",u"ì":"i",
@@ -386,7 +386,7 @@ class Invoice():
         etree.SubElement(infoTributaria, 'ambiente').text = self.company.tipo_de_ambiente
         #proxy.SriService.get_active_env()
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
-        etree.SubElement(infoTributaria, 'razonSocial').text = self.replace_charter(self.company.party.name)
+        etree.SubElement(infoTributaria, 'razonSocial').text = self.replace_character(self.company.party.name)
         if self.company.party.commercial_name:
             etree.SubElement(infoTributaria, 'nombreComercial').text = self.company.party.commercial_name
         etree.SubElement(infoTributaria, 'ruc').text = self.company.party.vat_number
@@ -416,7 +416,7 @@ class Invoice():
             etree.SubElement(infoFactura, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-        etree.SubElement(infoFactura, 'razonSocialComprador').text = self.replace_charter(self.party.name)
+        etree.SubElement(infoFactura, 'razonSocialComprador').text = self.replace_character(self.party.name)
         etree.SubElement(infoFactura, 'identificacionComprador').text = self.party.vat_number
         if self.party.addresses:
             etree.SubElement(infoFactura, 'direccionComprador').text = self.party.addresses[0].street
@@ -500,7 +500,7 @@ class Invoice():
 
             detalle = etree.Element('detalle')
             etree.SubElement(detalle, 'codigoPrincipal').text = fix_chars(line.product.code)
-            etree.SubElement(detalle, 'descripcion').text = self.replace_charter(line.description)#fix_chars(line.description)
+            etree.SubElement(detalle, 'descripcion').text = self.replace_character(line.description)#fix_chars(line.description)
             etree.SubElement(detalle, 'cantidad').text = '%.2f' % (line.quantity)
             etree.SubElement(detalle, 'precioUnitario').text = '%.2f' % (line.unit_price)
             etree.SubElement(detalle, 'descuento').text = '0.00'
@@ -678,7 +678,7 @@ class Invoice():
             name = self.company.party.name
             name_l=name.lower()
             name_l=name_l.replace(' ','_')
-            name_r = self.replace_charter(name_l)
+            name_r = self.replace_character(name_l)
             name_c = name_r+'.p12'
 
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
@@ -710,16 +710,16 @@ class Invoice():
                 self.raise_user_error('No se ha encontrado el archivo de firma digital (.p12)')
 
             signed_document= s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
-
+            #signed_document= self.replace_character(signed_document)
             #envio al sri para recepcion del comprobante electronico
-            print "Documento ", signed_document
+
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
             if result != True:
                 self.raise_user_error(result)
             time.sleep(WAIT_FOR_RECEIPT)
             # solicitud al SRI para autorizacion del comprobante electronico
             doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_r, 'out_invoice', signed_document,{})
-
+            print "Lo que llega ", doc_xml, m, auth, path, numero, num
             if doc_xml is None:
                 msg = ' '.join(m)
                 raise m
@@ -736,7 +736,7 @@ class Invoice():
                 name = self.company.party.name
                 name_l=name.lower()
                 name_l=name_l.replace(' ','_')
-                name_r = self.replace_charter(name_l)
+                name_r = self.replace_character(name_l)
                 name_c = name_r+'.p12'
 
                 authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
@@ -797,7 +797,7 @@ class Invoice():
     def send_mail_invoice(self, xml_element, access_key, send_m, s, server="localhost"):
         MAIL= u"Ud no ha configurado el correo del cliente. Diríjase a: \nTerceros->General->Medios de Contacto"
         pool = Pool()
-        empresa = self.replace_charter(self.company.party.name) #cambiado por self.elimina_tildes(self.company.party.name)
+        empresa = self.replace_character(self.company.party.name) #cambiado por self.elimina_tildes(self.company.party.name)
         #empresa = unicode(empresa, 'utf-8')
         empresa = str(self.elimina_tildes(empresa))
         empresa = empresa.replace(' ','_')
@@ -805,9 +805,9 @@ class Invoice():
 
         ahora = datetime.datetime.now()
         year = str(ahora.year)
-        client = self.replace_charter(self.party.name) #reemplazo self.party.name
+        client = self.replace_character(self.party.name) #reemplazo self.party.name
         client = client.upper()
-        empresa_ = self.replace_charter(self.company.party.name) #reemplazo self.company.party.name
+        empresa_ = self.replace_character(self.company.party.name) #reemplazo self.company.party.name
         ruc = self.company.party.vat_number
         if ahora.month < 10:
             month = '0'+ str(ahora.month)
@@ -902,7 +902,7 @@ class Invoice():
             etree.SubElement(infoNotaCredito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-        etree.SubElement(infoNotaCredito, 'razonSocialComprador').text = self.replace_charter(self.party.name) #self.party.name
+        etree.SubElement(infoNotaCredito, 'razonSocialComprador').text = self.replace_character(self.party.name) #self.party.name
         etree.SubElement(infoNotaCredito, 'identificacionComprador').text = self.party.vat_number
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
         if self.company.party.mandatory_accounting:
@@ -956,7 +956,7 @@ class Invoice():
 
             detalle = etree.Element('detalle')
             etree.SubElement(detalle, 'codigoInterno').text = fix_chars(line.product.code)
-            etree.SubElement(detalle, 'descripcion').text = self.replace_charter(line.description) #fix_chars(line.description)
+            etree.SubElement(detalle, 'descripcion').text = self.replace_character(line.description) #fix_chars(line.description)
             etree.SubElement(detalle, 'cantidad').text = '%.2f' % (line.quantity)
             etree.SubElement(detalle, 'precioUnitario').text = '%.2f' % (line.unit_price)
             etree.SubElement(detalle, 'descuento').text = '0.00'
@@ -1159,7 +1159,7 @@ class Invoice():
             name = self.company.party.name
             name_l=name.lower()
             name_l=name_l.replace(' ','_')
-            name_r = self.replace_charter(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
 
             if self.company.file_pk12:
@@ -1241,7 +1241,7 @@ class Invoice():
             etree.SubElement(infoNotaDebito, 'tipoIdentificacionComprador').text = tipoIdentificacion[self.party.type_document]
         else:
             self.raise_user_error("No ha configurado el tipo de identificacion del cliente")
-        etree.SubElement(infoNotaDebito, 'razonSocialComprador').text = self.replace_charter(self.party.name) #self.party.name
+        etree.SubElement(infoNotaDebito, 'razonSocialComprador').text = self.replace_character(self.party.name) #self.party.name
         etree.SubElement(infoNotaDebito, 'identificacionComprador').text = self.party.vat_number
         #etree.SubElement(infoNotaCredito, 'contribuyenteEspecial').text = company.company_registry
         if self.company.party.mandatory_accounting:
@@ -1289,7 +1289,7 @@ class Invoice():
         motivos = etree.Element('motivos')
         for line in self.lines:
             motivo = etree.Element('motivo')
-            etree.SubElement(motivo, 'razon').text = self.replace_charter(line.description) #fix_chars(line.description)
+            etree.SubElement(motivo, 'razon').text = self.replace_character(line.description) #fix_chars(line.description)
             etree.SubElement(motivo, 'valor').text = '%.2f' % (line.unit_price)
             motivos.append(motivo)
         return motivos
@@ -1354,7 +1354,7 @@ class Invoice():
             name = self.company.party.name
             name_l = name.lower()
             name_l=name_l.replace(' ','_')
-            name_r = self.replace_charter(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
 
             if self.company.file_pk12:
@@ -1420,7 +1420,7 @@ class Invoice():
         name = self.company.party.name
         name_l = name.lower()
         name_l=name_l.replace(' ','_')
-        name_r = self.replace_charter(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+        name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
         """
         if self.company.file_pk12:
@@ -1504,7 +1504,7 @@ class Invoice():
             name = self.company.party.name
             name_l=name.lower()
             name_l=name_l.replace(' ','_')
-            name_r = self.replace_charter(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             print "El nombre ", name_r
             name_c = name_r+'.p12'
             """
@@ -1579,7 +1579,7 @@ class Invoice():
         name = self.company.party.name
         name_l=name.lower()
         name_l=name_l.replace(' ','_')
-        name_r = self.replace_charter(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+        name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
 
         if self.company.file_pk12:
@@ -1635,7 +1635,7 @@ class Invoice():
             name = self.company.party.name
             name_l=name.lower()
             name_l=name_l.replace(' ','_')
-            name_r = self.replace_charter(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
             name_c = name_r+'.p12'
 
             if self.company.file_pk12:
