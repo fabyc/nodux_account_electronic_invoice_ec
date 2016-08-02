@@ -218,6 +218,8 @@ class Invoice():
                 moves.append(invoice.create_move())
                 if invoice.fisic_invoice == True:
                     pass
+                elif invoice.number:
+                    pass
                 else:
                     invoice.set_number()
                     if invoice.lote == False:
