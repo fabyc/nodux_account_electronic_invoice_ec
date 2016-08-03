@@ -190,7 +190,7 @@ class AccountWithholding():
         number = self.number
         #auth = self.journal_id.auth_id
         infoTributaria = etree.Element('infoTributaria')
-        etree.SubElement(infoTributaria, 'ambiente').text = '1'
+        etree.SubElement(infoTributaria, 'ambiente').text = self.company.tipo_de_ambiente
         #proxy.SriService.get_active_env()
         etree.SubElement(infoTributaria, 'tipoEmision').text = self.company.emission_code
         etree.SubElement(infoTributaria, 'razonSocial').text = self.replace_charter(self.company.party.name) #self.company.party.name
@@ -348,7 +348,7 @@ class AccountWithholding():
         t_cbte = tipoDocumento[self.type]
         ruc = self.company.party.vat_number
         #t_amb=proxy.SriService.get_active_env()
-        t_amb="1"
+        t_amb= self.company.tipo_de_ambiente
         n_cbte= self.number
         cod= "13245768"
         t_ems= self.company.emission_code
