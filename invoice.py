@@ -207,7 +207,7 @@ class Invoice():
     @ModelView.button
     @Workflow.transition('posted')
     def post(cls, invoices):
-        print "Metodo normal de facturacion electronica"
+        print "Metodo de facturacion electronica"
         Move = Pool().get('account.move')
         moves = []
 

@@ -14,4 +14,12 @@
             <newline />
         </page>
     </xpath>
+
+    <xpath expr="/form/notebook/page[@id='invoice']/field[@name='currency']" position="after">
+        <newline/>
+        <label name="formas_pago_sri"/>
+        <field name="formas_pago_sri" xexpand="1"/>
+        <newline/>
+    </xpath>
+
 </data>
