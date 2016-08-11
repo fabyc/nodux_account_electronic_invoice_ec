@@ -1925,7 +1925,7 @@ class InvoiceReport(Report):
         localcontext['numero'] = cls._get_numero(Invoice, invoice)
         localcontext['fecha'] = cls._get_fecha(Invoice, invoice)
         localcontext['motivo'] = cls._get_motivo(Invoice, invoice)
-
+        localcontext['maturity_date'] = cls._get_maturity_date(Invoice, invoice)
         return super(InvoiceReport, cls).parse(report, records, data,
                 localcontext=localcontext)
 
@@ -2109,3 +2109,22 @@ class InvoiceReport(Report):
                         subtotal0= subtotal0 + (line.amount)
 
         return subtotal0
+
+    @classmethod
+    def _get_maturity_date(cls, Invoice, invoice):
+        pool = Pool()
+        Invoice = pool.get('account.invoice')
+        MoveLine = pool.get('account.move.line')
+        PaymentLine = pool.get('account.voucher.line.paymode')
+        Date = pool.get('ir.date')
+        id_i = None
+        date = Date.today()
+
+        move = invoice.move
+        lines = MoveLine.search([('move', '=', move), ('party', '!=', None), ('maturity_date', '!=', None)])
+
+        if lines:
+            for l in lines:
+                date = l.maturity_date
+
+        return date
