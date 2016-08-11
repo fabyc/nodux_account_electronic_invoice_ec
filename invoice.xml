@@ -7,7 +7,7 @@
             <field name="model">account.invoice</field>
             <field name="report_name">account.invoice</field>
             <field name="report">nodux_account_electronic_invoice_ec/invoice.odt</field>
-            <field name="style">nodux_account_electronic_invoice_ec/header_A4.odt</field>
+            <field name="style"></field>
         </record>
         <!-- Send sri lote-->
          <record model="ir.ui.view" id="send_sri_lote_start_view_form">
