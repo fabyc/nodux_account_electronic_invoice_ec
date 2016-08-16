@@ -375,7 +375,7 @@ class Invoice():
             u"Í":"I",u"Ì":"I",u"Î":"I",u"Ï":"I",u"Ó":"O",u"Ò":"O",u"Ö":"O",u"Ô":"O",u"Ú":"U",u"Ù":"U",u"Ü":"U",
             u"Û":"U",u"á":"a",u"à":"a",u"â":"a",u"ä":"a",u"é":"e",u"è":"e",u"ê":"e",u"ë":"e",u"í":"i",u"ì":"i",
             u"ï":"i",u"î":"i",u"ó":"o",u"ò":"o",u"ô":"o",u"ö":"o",u"ú":"u",u"ù":"u",u"ü":"u",u"û":"u",u"ñ":"n",
-            u"Ñ":"N"}
+            u"Ñ":"N", u"Nº":"No", u"nº":"No"}
         regex = re.compile("(%s)" % "|".join(map(re.escape, reemplazo.keys())))
         nueva_cadena = regex.sub(lambda x: str(reemplazo[x.string[x.start():x.end()]]), cadena)
         return nueva_cadena
@@ -943,7 +943,7 @@ class Invoice():
             totalConImpuestos.append(totalImpuesto)
 
         infoNotaCredito.append(totalConImpuestos)
-        etree.SubElement(infoNotaCredito, 'motivo').text= motivo
+        etree.SubElement(infoNotaCredito, 'motivo').text= self.replace_character(motivo)
         return infoNotaCredito
     #detalles de nota de credito
     def get_detail_credit_note(self):
