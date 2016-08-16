@@ -454,37 +454,38 @@ class Invoice():
         etree.SubElement(infoFactura, 'importeTotal').text = '{:.2f}'.format(self.total_amount)
         etree.SubElement(infoFactura, 'moneda').text = 'DOLAR'
 
-        if self.formas_pago_sri.name == 'NINGUNA':
-            pass
-        else:
-            pagos = etree.Element('pagos')
-            pago = etree.Element('pago')
-            etree.SubElement(pago, 'formaPago').text = self.formas_pago_sri.code
-            etree.SubElement(pago, 'total').text = '{:.2f}'.format(self.total_amount)
-            if self.payment_term:
-                day = 0
-                month = 0
-                week = 0
-                for l in self.payment_term.lines:
-                    if l.days:
-                        print "Dias", l.days
-                        day += l.days
-                    if l.months:
-                        month += l.months
-                    if l.weeks:
-                        week += l.weeks
-                    if day >= 0 :
-                        etree.SubElement(pago, 'plazo').text = str(day)
-                        etree.SubElement(pago, 'unidadTiempo').text = 'dias'
-                    if month > 0:
-                        etree.SubElement(pago, 'plazo').text = str(month)
-                        etree.SubElement(pago, 'unidadTiempo').text = 'meses'
-                    if week > 0:
-                        etree.SubElement(pago, 'plazo').text = str(month)
-                        etree.SubElement(pago, 'unidadTiempo').text = 'semanas'
+        if self.formas_pago_sri:
+            if self.formas_pago_sri.name == 'NINGUNA':
+                pass
+            else:
+                pagos = etree.Element('pagos')
+                pago = etree.Element('pago')
+                etree.SubElement(pago, 'formaPago').text = self.formas_pago_sri.code
+                etree.SubElement(pago, 'total').text = '{:.2f}'.format(self.total_amount)
+                if self.payment_term:
+                    day = 0
+                    month = 0
+                    week = 0
+                    for l in self.payment_term.lines:
+                        if l.days:
+                            print "Dias", l.days
+                            day += l.days
+                        if l.months:
+                            month += l.months
+                        if l.weeks:
+                            week += l.weeks
+                        if day >= 0 :
+                            etree.SubElement(pago, 'plazo').text = str(day)
+                            etree.SubElement(pago, 'unidadTiempo').text = 'dias'
+                        if month > 0:
+                            etree.SubElement(pago, 'plazo').text = str(month)
+                            etree.SubElement(pago, 'unidadTiempo').text = 'meses'
+                        if week > 0:
+                            etree.SubElement(pago, 'plazo').text = str(month)
+                            etree.SubElement(pago, 'unidadTiempo').text = 'semanas'
 
-            pagos.append(pago)
-            infoFactura.append(pagos)
+                pagos.append(pago)
+                infoFactura.append(pagos)
 
         return infoFactura
 
