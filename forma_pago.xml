@@ -3,6 +3,10 @@
 this repository contains the full copyright notices and license terms. -->
 <tryton>
     <data>
+        <record model="account.formas_pago" id="afp_0">
+            <field name="name">NINGUNA</field>
+            <field name="code">00</field>
+        </record>
         <record model="account.formas_pago" id="afp_1">
             <field name="name">SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (Efectivo)</field>
             <field name="code">01</field>
