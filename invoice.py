@@ -592,8 +592,6 @@ class Invoice():
 
 
     def generate_xml_invoice(self):
-        """
-        """
         factura = etree.Element('factura')
         factura.set("id", "comprobante")
         factura.set("version", "1.1.0")
@@ -641,16 +639,14 @@ class Invoice():
         return access_key
 
     def check_before_sent(self):
-        """
-        """
+
         sql = "select autorizado_sri, number from account_invoice where state='open' and number < '%s' order by number desc limit 1" % self.number
         self.execute(sql)
         res = self.fetchone()
         return res[0] and True or False
 
     def action_generate_invoice(self):
-        """
-        """
+
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error de datos de conexión al autorizador de \nfacturacion electrónica.\nVerifique: USUARIO Y CONTRASEÑA .'
         ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquese con NODUX"
@@ -700,10 +696,7 @@ class Invoice():
                 pass
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-            """
-            shutil.copy2(name_c, nuevaruta)
-            os.remove(name_c)
-            """
+
             factura1 = self.generate_xml_invoice()
             factura = etree.tostring(factura1, encoding = 'utf8', method = 'xml')
             a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(factura, 'out_invoice', {})
@@ -726,7 +719,6 @@ class Invoice():
             time.sleep(WAIT_FOR_RECEIPT)
             # solicitud al SRI para autorizacion del comprobante electronico
             doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization(access_key, name_r, 'out_invoice', signed_document,{})
-            print "Lo que llega ", doc_xml, m, auth, path, numero, num
             if doc_xml is None:
                 msg = ' '.join(m)
                 raise m
@@ -759,10 +751,6 @@ class Invoice():
                     pass
 
                 nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-                """
-                shutil.copy2(name_c, nuevaruta)
-                os.remove(name_c)
-                """
 
                 # XML del comprobante electronico: nota de credito
                 notaCredito1 = self.generate_xml_credit_note()
@@ -1063,13 +1051,11 @@ class Invoice():
         #generar detalles
         detalles = self.get_detail_credit_note()
         notaCredito.append(detalles)
-        print etree.tostring(notaCredito, pretty_print=True, xml_declaration=True, encoding="utf-8")
         return notaCredito
 
     #withholding (comprobante de retencion)
     def get_invoice_element_w(self):
-        """
-        """
+
         company = self.company
         party = self.party
         infoCompRetencion = etree.Element('infoCompRetencion')
@@ -1130,8 +1116,7 @@ class Invoice():
         return comprobanteRetencion
 
     def action_generate_invoice_w(self):
-        """
-        """
+
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
         WAIT_FOR_RECEIPT = 3
@@ -1227,8 +1212,7 @@ class Invoice():
 
     #nota de debito
     def get_debit_note_element(self):
-        """
-        """
+
         pool = Pool()
         num_mod=self.number_w
         Invoices = pool.get('account.invoice')
@@ -1323,8 +1307,7 @@ class Invoice():
 
     #consumir ws sri, llamar método de firma obtener datos del SRI
     def action_generate_debit_note(self):
-        """
-        """
+
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
         WAIT_FOR_RECEIPT = 3
@@ -1429,16 +1412,6 @@ class Invoice():
         name_l=name_l.replace(' ','_')
         name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
-        """
-        if self.company.file_pk12:
-            archivo = self.company.file_pk12
-        else :
-            self.raise_user_error(PK12)
-
-        f = open(name_c, 'wb')
-        f.write(archivo)
-        f.close()
-        """
 
         authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
         if authenticate == '1':
@@ -1453,13 +1426,8 @@ class Invoice():
 
         nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
 
-        """
-        shutil.copy2(name_c, nuevaruta)
-        os.remove(name_c)
-        """
         file_pk12 = base64.encodestring(nuevaruta+'/'+name_c)
         password = self.company.password_pk12
-
 
         Invoice = pool.get('account.invoice')
         invoices = Invoice.browse(Transaction().context['active_ids'])
@@ -1477,8 +1445,7 @@ class Invoice():
         return lote
 
     def action_generate_lote(self):
-        """
-        """
+
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
         ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquise con NODUX"
@@ -1512,18 +1479,8 @@ class Invoice():
             name_l=name.lower()
             name_l=name_l.replace(' ','_')
             name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
-            print "El nombre ", name_r
             name_c = name_r+'.p12'
-            """
-            if self.company.file_pk12:
-                archivo = self.company.file_pk12
-            else :
-                self.raise_user_error(PK12)
 
-            f = open(name_c, 'wb')
-            f.write(archivo)
-            f.close()
-            """
             authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
             if authenticate == '1':
                 pass
@@ -1537,10 +1494,6 @@ class Invoice():
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
 
-            """
-            shutil.copy2(name_c, nuevaruta)
-            os.remove(name_c)
-            """
             # XML del comprobante electronico: factura
             lote1 = self.generate_xml_lote()
             lote = etree.tostring(lote1, encoding = 'utf8', method ='xml')
@@ -1931,8 +1884,39 @@ class InvoiceReport(Report):
         localcontext['fecha'] = cls._get_fecha(Invoice, invoice)
         localcontext['motivo'] = cls._get_motivo(Invoice, invoice)
         localcontext['maturity_date'] = cls._get_maturity_date(Invoice, invoice)
+        localcontext['observaciones'] = cls._get_observaciones(Invoice, invoice)
+        localcontext['comment'] = cls._get_comment(Invoice, invoice)
+
         return super(InvoiceReport, cls).parse(report, records, data,
                 localcontext=localcontext)
+
+    @classmethod
+    def _get_observaciones(cls, Invoice, invoice):
+        numero = ""
+        pool = Pool()
+        Sale = pool.get('sale.sale')
+        sales = Sale.search([('reference', '=', invoice.description), ('reference', '!=', None)])
+        observaciones = None
+        if sales:
+            for s in sales:
+                sale = s
+                if sale.comment:
+                    observaciones = sale.comment
+        return observaciones
+
+    @classmethod
+    def _get_comment(cls, Invoice, invoice):
+        numero = ""
+        pool = Pool()
+        Sale = pool.get('sale.sale')
+        sales = Sale.search([('reference', '=', invoice.description), ('reference', '!=', None)])
+        comment = False
+        if sales:
+            for s in sales:
+                sale = s
+                if sale.comment:
+                    comment = True
+        return comment
 
     @classmethod
     def _get_numero(cls, Invoice, invoice):
