@@ -1884,39 +1884,10 @@ class InvoiceReport(Report):
         localcontext['fecha'] = cls._get_fecha(Invoice, invoice)
         localcontext['motivo'] = cls._get_motivo(Invoice, invoice)
         localcontext['maturity_date'] = cls._get_maturity_date(Invoice, invoice)
-        localcontext['observaciones'] = cls._get_observaciones(Invoice, invoice)
-        localcontext['comment'] = cls._get_comment(Invoice, invoice)
 
         return super(InvoiceReport, cls).parse(report, records, data,
                 localcontext=localcontext)
 
-    @classmethod
-    def _get_observaciones(cls, Invoice, invoice):
-        numero = ""
-        pool = Pool()
-        Sale = pool.get('sale.sale')
-        sales = Sale.search([('reference', '=', invoice.description), ('reference', '!=', None)])
-        observaciones = None
-        if sales:
-            for s in sales:
-                sale = s
-                if sale.comment:
-                    observaciones = sale.comment
-        return observaciones
-
-    @classmethod
-    def _get_comment(cls, Invoice, invoice):
-        numero = ""
-        pool = Pool()
-        Sale = pool.get('sale.sale')
-        sales = Sale.search([('reference', '=', invoice.description), ('reference', '!=', None)])
-        comment = False
-        if sales:
-            for s in sales:
-                sale = s
-                if sale.comment:
-                    comment = True
-        return comment
 
     @classmethod
     def _get_numero(cls, Invoice, invoice):
