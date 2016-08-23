@@ -207,7 +207,6 @@ class Invoice():
     @ModelView.button
     @Workflow.transition('posted')
     def post(cls, invoices):
-        print "Metodo de facturacion electronica"
         Move = Pool().get('account.move')
         moves = []
 
@@ -468,7 +467,6 @@ class Invoice():
                     week = 0
                     for l in self.payment_term.lines:
                         if l.days:
-                            print "Dias", l.days
                             day += l.days
                         if l.months:
                             month += l.months
@@ -504,7 +502,9 @@ class Invoice():
             pool = Pool()
             Taxes1 = pool.get('product.category-customer-account.tax')
             Taxes2 = pool.get('product.template-customer-account.tax')
-
+            taxes1 = None
+            taxes2 = None
+            taxes3= None
             detalle = etree.Element('detalle')
             etree.SubElement(detalle, 'codigoPrincipal').text = fix_chars(line.product.code)
             etree.SubElement(detalle, 'descripcion').text = self.replace_character(line.description)#fix_chars(line.description)
@@ -531,7 +531,6 @@ class Invoice():
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -1966,6 +1965,9 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
+        taxes1 = None
+        taxes2 = None
+        taxes3 = None
 
         for line in invoice.lines:
             if line.product.taxes_category == True:
@@ -1978,7 +1980,6 @@ class InvoiceReport(Report):
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -2002,6 +2003,10 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
+        taxes1 = None
+        taxes2 = None
+        taxes3 = None
+
         for line in invoice.lines:
             if line.product.taxes_category == True:
                 if line.product.category.taxes_parent == True:
@@ -2013,7 +2018,6 @@ class InvoiceReport(Report):
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
@@ -2038,6 +2042,9 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
+        taxes1 = None
+        taxes2 = None
+        taxes3 = None
 
         for line in invoice.lines:
             if line.product.taxes_category == True:
@@ -2050,7 +2057,6 @@ class InvoiceReport(Report):
                     taxes2 = Taxes2.search([('product','=', line.product)])
                     taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
-                taxes1= Taxes1.search([('category','=', line.product.category)])
                 taxes2 = Taxes2.search([('product','=', line.product)])
                 taxes3 = Taxes2.search([('product','=', line.product.template)])
 
