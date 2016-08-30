@@ -135,7 +135,7 @@ class Invoice():
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
-                'invoice_report_cache', 'invoice_report_format', 'move']
+                'invoice_report_cache', 'invoice_report_format', 'move', 'number', 'fisic_invoice', 'formas_pago_sri']
         cls._transitions |= set((('posted', 'draft'),))
 
     def _credit(self):
@@ -240,8 +240,6 @@ class Invoice():
                 Module = pool.get('ir.module.module')
                 module = Module.search([('name', '=', 'nodux_account_withholding_in_ec'), ('state', '=', 'installed')])
                 invoice.create_move()
-
-
                 if invoice.number:
                     pass
                 else:
