@@ -212,10 +212,17 @@ class Invoice():
 
         for invoice in invoices:
             invoice.limit()
+            pool = Pool()
+            Sale = pool.get('sale.sale')
+            sales = Sale.search([('reference','=', invoice.description)])
+            for s in sales:
+                sale = s
             if invoice.type == u'out_invoice' or invoice.type == u'out_credit_note':
                 invoice.create_move()
                 moves.append(invoice.create_move())
                 if invoice.fisic_invoice == True:
+                    pass
+                if sale.fisic_invoice == True:
                     pass
                 elif invoice.number:
                     pass
@@ -233,6 +240,8 @@ class Invoice():
                 Module = pool.get('ir.module.module')
                 module = Module.search([('name', '=', 'nodux_account_withholding_in_ec'), ('state', '=', 'installed')])
                 invoice.create_move()
+
+
                 if invoice.number:
                     pass
                 else:
