@@ -8,64 +8,8 @@ this repository contains the full copyright notices and license terms. -->
             <field name="code">00</field>
         </record>
         <record model="account.formas_pago" id="afp_1">
-            <field name="name">SIN UTILIZACIÓN DEL SISTEMA FINANCIERO (Efectivo)</field>
+            <field name="name">SIN UTILIZACIÓN DEL SISTEMA FINANCIERO(Efectivo)</field>
             <field name="code">01</field>
-        </record>
-        <record model="account.formas_pago" id="afp_2">
-            <field name="name">CHEQUE PROPIO</field>
-            <field name="code">02</field>
-        </record>
-        <record model="account.formas_pago" id="afp_3">
-            <field name="name">CHEQUE CERTIFICADO</field>
-            <field name="code">03</field>
-        </record>
-        <record model="account.formas_pago" id="afp_4">
-            <field name="name">CHEQUE DE GERENCIA</field>
-            <field name="code">04</field>
-        </record>
-        <record model="account.formas_pago" id="afp_5">
-            <field name="name">CHEQUE DEL EXTERIOR</field>
-            <field name="code">05</field>
-        </record>
-        <record model="account.formas_pago" id="afp_6">
-            <field name="name">DÉBITO DE CUENTA</field>
-            <field name="code">06</field>
-        </record>
-        <record model="account.formas_pago" id="afp_7">
-            <field name="name">TRANSFERENCIA PROPIO BANCO</field>
-            <field name="code">07</field>
-        </record>
-        <record model="account.formas_pago" id="afp_8">
-            <field name="name">TRANSFERENCIA OTRO BANCO NACIONAL</field>
-            <field name="code">08</field>
-        </record>
-        <record model="account.formas_pago" id="afp_9">
-            <field name="name">TRANSFERENCIA BANCO EXTERIOR</field>
-            <field name="code">09</field>
-        </record>
-        <record model="account.formas_pago" id="afp_10">
-            <field name="name">TARJETA DE CRÉDITO NACIONAL</field>
-            <field name="code">10</field>
-        </record>
-        <record model="account.formas_pago" id="afp_11">
-            <field name="name">TARJETA DE CRÉDITO INTERNACIONAL</field>
-            <field name="code">11</field>
-        </record>
-        <record model="account.formas_pago" id="afp_12">
-            <field name="name">GIRO</field>
-            <field name="code">12</field>
-        </record>
-        <record model="account.formas_pago" id="afp_13">
-            <field name="name">DEPÓSITO EN CUENTA (CORRIENTE/AHORROS)</field>
-            <field name="code">13</field>
-        </record>
-        <record model="account.formas_pago" id="afp_14">
-            <field name="name">ENDOSO DE INVERSIÓN</field>
-            <field name="code">14</field>
-        </record>
-        <record model="account.formas_pago" id="afp_15">
-            <field name="name">COMPENSACIÓN DE DEUDAS</field>
-            <field name="code">15</field>
         </record>
         <record model="account.formas_pago" id="afp_16">
           <field name="name">TARJETA DE DÉBITO</field>
@@ -79,5 +23,18 @@ this repository contains the full copyright notices and license terms. -->
           <field name="name">TARJETA PREPAGO</field>
           <field name="code">18</field>
         </record>
+        <record model="account.formas_pago" id="afp_19">
+          <field name="name">TARJETA DE CRÉDITO</field>
+          <field name="code">19</field>
+        </record>
+        <record model="account.formas_pago" id="afp_20">
+          <field name="name">OTROS CON UTILIZACION DEL SISTEMA FINANCIERO</field>
+          <field name="code">20</field>
+        </record>
+        <record model="account.formas_pago" id="afp_21">
+          <field name="name">ENDOSO DE TÍTULOS</field>
+          <field name="code">21</field>
+        </record>
+
     </data>
 </tryton>
