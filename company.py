@@ -25,15 +25,15 @@ class Company(ModelSQL, ModelView):
            ('2', 'Produccion'),
        ], 'Tipo de Ambiente')
 
-    password_ws = fields.Char('Password WS', help=u'Ingrese la contraseña que le fue emitido por NODUX', required=True)
-    user_ws = fields.Char('Usuario WS', help='Ingrese el usuario que le fue emitido por NODUX', required = True)
+    password_ws = fields.Char('Password WS', help=u'Ingrese la contraseña que le fue emitido por NODUX')
+    user_ws = fields.Char('Usuario WS', help='Ingrese el usuario que le fue emitido por NODUX')
     #file_pk12 = fields.Binary('Archivo de firma digital', help = 'Cargue el archivo de la firma digital .pk12',required = True)
-    password_pk12 = fields.Char('Password de la Firma Digital', help=u'Contraseña de la firma digital',required = True)
+    password_pk12 = fields.Char('Password de la Firma Digital', help=u'Contraseña de la firma digital')
     logo = fields.Binary('Logo de su empresa', help='Logo para RIDE de sus facturas', required = True)
 
-    password = fields.Function(fields.Char('Password WS'), getter='get_password', setter='set_password')
-    user = fields.Function(fields.Char('Usuario WS'), getter='get_user', setter='set_user')
-    pass_pk12 = fields.Function(fields.Char('Password de la firma digital'), getter='get_pk12p', setter='set_pk12p')
+    password = fields.Function(fields.Char('Password WS', required=True), getter='get_password_ws', setter='set_password_ws')
+    user = fields.Function(fields.Char('Usuario WS', required=True), getter='get_user_ws', setter='set_user_ws')
+    pass_pk12 = fields.Function(fields.Char('Password de la firma digital', required=True), getter='get_pk12p', setter='set_pk12p')
 
     @classmethod
     def __setup__(cls):
@@ -47,11 +47,11 @@ class Company(ModelSQL, ModelView):
     def default_tipo_de_ambiente():
         return '2'
 
-    def get_password(self, name):
+    def get_password_ws(self, name):
         return 'x' * 10
 
     @classmethod
-    def set_password(cls, companys, name, value):
+    def set_password_ws(cls, companys, name, value):
         if value == 'x' * 10:
             return
         to_write = []
@@ -62,11 +62,11 @@ class Company(ModelSQL, ModelView):
         cls.write(*to_write)
 
 
-    def get_user(self, name):
+    def get_user_ws(self, name):
         return 'x' * 10
 
     @classmethod
-    def set_user(cls, companys, name, value):
+    def set_user_ws(cls, companys, name, value):
         if value == 'x' * 10:
             return
         to_write = []
