@@ -125,10 +125,6 @@ class AccountWithholding():
     @classmethod
     def __setup__(cls):
         super(AccountWithholding, cls).__setup__()
-        """
-        cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
-                'invoice_report_cache', 'invoice_report_format']
-        """
         cls.number.states['readonly'] = ~Eval('fisic',True)
         cls.number.states['required'] = Eval('fisic',True)
 
@@ -160,8 +156,6 @@ class AccountWithholding():
         return nueva_cadena
 
     def get_invoice_element_w(self):
-        """
-        """
         company = self.company
         party = self.party
         infoCompRetencion = etree.Element('infoCompRetencion')
@@ -207,8 +201,7 @@ class AccountWithholding():
         return infoTributaria
 
     def action_generate_invoice_w(self):
-        """
-        """
+
         PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
         AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
         ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquese con NODUX"
@@ -302,13 +295,7 @@ class AccountWithholding():
     def get_taxes(self):
         impuestos = etree.Element('impuestos')
         for tax in self.taxes:
-            """
-            fecha = str(self.ambiente).replace('-','/')
-            m = fecha[8:10]
-            d = fecha[5:7]
-            y = fecha[0:4]
-            """
-            print "tax.tax.code_withholding ***", tax.tax
+
             impuesto = etree.Element('impuesto')
             if tax.tax.code_withholding:
                 etree.SubElement(impuesto, 'codigo').text = tax.tax.code_withholding
@@ -412,7 +399,10 @@ class AccountWithholding():
                 to_email_2 = c.value
         email_e= to_email_2
         email = to_email
-        total = str(self.total_amount)
+        if self.total_amount2 < Decimal(0.0):
+            total = str(self.total_amount2 * -1)
+        else:
+            total = str(self.total_amount2)
         if self.estado_sri == 'AUTORIZADO':
             s.model.nodux_electronic_invoice_auth.conexiones.connect_db( nombre, cedula, ruc, nombre_e, tipo, fecha, empresa, numero, path_xml, path_pdf,estado, auth, email, email_e, total, {})
 
