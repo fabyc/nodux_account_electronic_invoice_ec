@@ -1890,10 +1890,56 @@ class InvoiceReport(Report):
         localcontext['fecha'] = cls._get_fecha(Invoice, invoice)
         localcontext['motivo'] = cls._get_motivo(Invoice, invoice)
         localcontext['maturity_date'] = cls._get_maturity_date(Invoice, invoice)
+        localcontext['plazo'] = cls._get_plazo(Invoice, invoice)
+        localcontext['unidad'] = cls._get_unidad(Invoice, invoice)
 
         return super(InvoiceReport, cls).parse(report, records, data,
                 localcontext=localcontext)
 
+    @classmethod
+    def _get_plazo(cls, Invoice, invoice):
+        plazo = 0
+        if invoice.payment_term:
+            day = 0
+            month = 0
+            week = 0
+            for l in invoice.payment_term.lines:
+                if l.days:
+                    day += l.days
+                if l.months:
+                    month += l.months
+                if l.weeks:
+                    week += l.weeks
+            if day >= 0 :
+                plazo = day
+            if month > 0:
+                plazo = month
+            if week > 0:
+                plazo = week
+
+        return plazo
+
+    @classmethod
+    def _get_unidad(cls, Invoice, invoice):
+        unidad = ""
+        if invoice.payment_term:
+            day = 0
+            month = 0
+            week = 0
+            for l in invoice.payment_term.lines:
+                if l.days:
+                    day += l.days
+                if l.months:
+                    month += l.months
+                if l.weeks:
+                    week += l.weeks
+            if day >= 0 :
+                unidad = 'dias'
+            if month > 0:
+                unidad = 'meses'
+            if week > 0:
+                unidad = 'semanas'
+        return unidad
 
     @classmethod
     def _get_numero(cls, Invoice, invoice):
