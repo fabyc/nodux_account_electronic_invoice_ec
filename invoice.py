@@ -1468,12 +1468,7 @@ class Invoice():
         date_f = self.invoice_date
         date= Date.today()
         limit= (date-date_f).days
-        #if limit > 1:
-         #   self.raise_user_error(MESSAGE_TIME_LIMIT)
 
-            # Validar que el envio de los comprobantes electronicos sea secuencial
-        #if not self.check_before_sent():
-            #self.raise_user_error(TITLE_NOT_SENT, MESSAGE_SEQUENCIAL)
         usuario = self.company.user_ws
         password_u= self.company.password_ws
         access_key = self.generate_access_key()
@@ -1528,9 +1523,8 @@ class Invoice():
             if auth == 'NO AUTORIZADO':
                 self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
             else:
-                pass
-
-            self.send_mail_invoice(doc_xml, access_key, send_m, s)
+                self.write([self],{ 'estado_sri': 'AUTORIZADO'})
+                self.send_mail_invoice(doc_xml, access_key, send_m, s)
 
         return access_key
 
