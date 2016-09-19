@@ -869,8 +869,7 @@ class Invoice():
             from_email = "nodux.ec@gmail.com"
         name = access_key + ".xml"
         reporte = xmlrpclib.Binary(report[1])
-        xml_element = unicode(xml_element, 'utf-8')
-        xml_element = self.elimina_tildes(xml_element)
+        xml_element = self.replace_character(xml_element)
         xml = xmlrpclib.Binary(xml_element.replace('><', '>\n<'))
 
         save_files = s.model.nodux_electronic_invoice_auth.conexiones.save_file(empresa, name_pdf, name_xml, reporte, xml,{})
@@ -1519,7 +1518,6 @@ class Invoice():
             if doc_xml is None:
                 msg = ' '.join(m)
                 raise m
-
             if auth == 'NO AUTORIZADO':
                 self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
             else:
