@@ -7,6 +7,12 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">SIN UTILIZACIÓN DEL SISTEMA FINANCIERO</field>
             <field name="code">01</field>
         </record>
+
+        <record model="account.formas_pago" id="afp_15">
+          <field name="name">COMPENSACIÓN DE DEUDAS</field>
+          <field name="code">15</field>
+        </record>
+        
         <record model="account.formas_pago" id="afp_16">
           <field name="name">TARJETA DE DÉBITO</field>
           <field name="code">16</field>
