@@ -125,7 +125,7 @@ class AccountWithholding():
     @classmethod
     def __setup__(cls):
         super(AccountWithholding, cls).__setup__()
-        cls.number.states['readonly'] = ~Eval('fisic',True)
+        cls.number.states['readonly'] = (~Eval('fisic',True)) | (Eval('state') != 'draft')
         cls.number.states['required'] = Eval('fisic',True)
 
     @classmethod
