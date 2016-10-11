@@ -10,6 +10,8 @@ from .tax import *
 from .product import *
 from .withholding import *
 from .account import *
+from .address import *
+
 def register():
     Pool.register(
         FormaPago,
@@ -27,6 +29,7 @@ def register():
         Template,
         AccountWithholding,
         Configuration,
+        Address,
         module='nodux_account_electronic_invoice_ec', type_='model')
     Pool.register(
         SendSriLote,
