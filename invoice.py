@@ -2004,6 +2004,7 @@ class InvoiceReport(Report):
         output.close()
         return image
 
+
     @classmethod
     def _get_subtotal_12(cls, Invoice, invoice):
         subtotal12 = Decimal(0.00)
@@ -2050,21 +2051,15 @@ class InvoiceReport(Report):
         Taxes2 = pool.get('product.template-customer-account.tax')
         taxes1 = None
         taxes2 = None
-        taxes3 = None
 
         for line in invoice.lines:
             if line.product.taxes_category == True:
                 if line.product.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', line.product.category.parent)])
-                    taxes2 = Taxes2.search([('product','=', line.product)])
-                    taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
                     taxes1= Taxes1.search([('category','=', line.product.category)])
-                    taxes2 = Taxes2.search([('product','=', line.product)])
-                    taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
                 taxes2 = Taxes2.search([('product','=', line.product)])
-                taxes3 = Taxes2.search([('product','=', line.product.template)])
 
             if taxes1:
                 for t in taxes1:
@@ -2072,10 +2067,6 @@ class InvoiceReport(Report):
                         subtotal14= subtotal14 + (line.amount)
             elif taxes2:
                 for t in taxes2:
-                    if str('{:.0f}'.format(t.tax.rate*100)) == '14':
-                        subtotal14= subtotal14 + (line.amount)
-            elif taxes3:
-                for t in taxes3:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '14':
                         subtotal14= subtotal14 + (line.amount)
 
@@ -2089,33 +2080,21 @@ class InvoiceReport(Report):
         Taxes2 = pool.get('product.template-customer-account.tax')
         taxes1 = None
         taxes2 = None
-        taxes3 = None
 
         for line in invoice.lines:
             if line.product.taxes_category == True:
                 if line.product.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', line.product.category.parent)])
-                    taxes2 = Taxes2.search([('product','=', line.product)])
-                    taxes3 = Taxes2.search([('product','=', line.product.template)])
                 else:
                     taxes1= Taxes1.search([('category','=', line.product.category)])
-                    taxes2 = Taxes2.search([('product','=', line.product)])
-                    taxes3 = Taxes2.search([('product','=', line.product.template)])
             else:
                 taxes2 = Taxes2.search([('product','=', line.product)])
-                taxes3 = Taxes2.search([('product','=', line.product.template)])
-
             if taxes1:
                 for t in taxes1:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         subtotal0= subtotal0 + (line.amount)
             elif taxes2:
                 for t in taxes2:
-                    if str('{:.0f}'.format(t.tax.rate*100)) == '0':
-                        subtotal0= subtotal0 + (line.amount)
-
-            elif taxes3:
-                for t in taxes3:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         subtotal0= subtotal0 + (line.amount)
 
