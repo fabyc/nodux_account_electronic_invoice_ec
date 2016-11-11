@@ -2049,17 +2049,19 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
-        taxes1 = None
-        taxes2 = None
+
 
         for line in invoice.lines:
+            taxes1 = None
+            taxes2 = None
+            taxes3 = None
             if line.product.taxes_category == True:
                 if line.product.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', line.product.category.parent)])
                 else:
-                    taxes1= Taxes1.search([('category','=', line.product.category)])
+                    taxes2= Taxes1.search([('category','=', line.product.category)])
             else:
-                taxes2 = Taxes2.search([('product','=', line.product)])
+                taxes3 = Taxes2.search([('product','=', line.product)])
 
             if taxes1:
                 for t in taxes1:
@@ -2067,6 +2069,10 @@ class InvoiceReport(Report):
                         subtotal14= subtotal14 + (line.amount)
             elif taxes2:
                 for t in taxes2:
+                    if str('{:.0f}'.format(t.tax.rate*100)) == '14':
+                        subtotal14= subtotal14 + (line.amount)
+            elif taxes3:
+                for t in taxes3:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '14':
                         subtotal14= subtotal14 + (line.amount)
 
@@ -2078,23 +2084,29 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
-        taxes1 = None
-        taxes2 = None
+
 
         for line in invoice.lines:
+            taxes1 = None
+            taxes2 = None
+            taxes3 = None
             if line.product.taxes_category == True:
                 if line.product.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', line.product.category.parent)])
                 else:
                     taxes1= Taxes1.search([('category','=', line.product.category)])
             else:
-                taxes2 = Taxes2.search([('product','=', line.product)])
+                taxes3 = Taxes2.search([('product','=', line.product)])
             if taxes1:
                 for t in taxes1:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         subtotal0= subtotal0 + (line.amount)
             elif taxes2:
                 for t in taxes2:
+                    if str('{:.0f}'.format(t.tax.rate*100)) == '0':
+                        subtotal0= subtotal0 + (line.amount)
+            elif taxes3:
+                for t in taxes3:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         subtotal0= subtotal0 + (line.amount)
 
