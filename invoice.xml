@@ -40,5 +40,22 @@
             <field name="name">invoice_tree</field>
         </record>
 
+        <!-- Group -->
+        <record model="res.group" id="group_send_sri">
+            <field name="name">Nodux - Envio de Comprobantes Electronicos SRI</field>
+        </record>
+
+        <record model="res.user-res.group"
+            id="user_admin_group_send_sri">
+            <field name="user" ref="res.user_admin"/>
+            <field name="group" ref="group_send_sri"/>
+        </record>
+
+        <record model="res.user-res.group"
+            id="user_trigger_group_send_sri">
+            <field name="user" ref="res.user_admin"/>
+            <field name="group" ref="group_send_sri"/>
+        </record>
+
     </data>
 </tryton>

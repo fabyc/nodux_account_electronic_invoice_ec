@@ -135,7 +135,7 @@ class Invoice():
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         cls._check_modify_exclude = ['estado_sri', 'path_xml', 'numero_autorizacion', 'ambiente','mensaje','path_pdf', 'state', 'payment_lines', 'cancel_move',
-                'invoice_report_cache', 'invoice_report_format', 'move', 'number', 'fisic_invoice', 'formas_pago_sri']
+                'invoice_report_cache', 'invoice_report_format', 'move', 'number', 'fisic_invoice', 'formas_pago_sri', 'comment']
         cls._transitions |= set((('posted', 'draft'),))
 
     def _credit(self):
@@ -1817,6 +1817,27 @@ class SendSriLote(Wizard):
     accept = StateTransition()
 
     def transition_accept(self):
+        pool = Pool()
+        ModelData = pool.get('ir.model.data')
+        User = pool.get('res.user')
+        Group = pool.get('res.group')
+        def in_group():
+            origin = str(self)
+            group = Group(ModelData.get_id('nodux_account_electronic_invoice_ec',
+                        'group_send_sri'))
+            transaction = Transaction()
+
+            user_id = transaction.user
+            if user_id == 0:
+                user_id = transaction.context.get('user', user_id)
+            if user_id == 0:
+                return True
+            user = User(user_id)
+            return origin and group in user.groups
+
+        if not in_group():
+            self.raise_user_error('No tiene permiso para enviar Comprobantes Electronicos al SRI')
+
         Invoice = Pool().get('account.invoice')
         invoices = Invoice.browse(Transaction().context['active_ids'])
         for invoice in invoices:
@@ -2109,7 +2130,6 @@ class InvoiceReport(Report):
                 for t in taxes3:
                     if str('{:.0f}'.format(t.tax.rate*100)) == '0':
                         subtotal0= subtotal0 + (line.amount)
-
         return subtotal0
 
     @classmethod
