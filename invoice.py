@@ -887,12 +887,12 @@ class Invoice():
         Invoice = pool.get('account.invoice')
         motivo='Emitir factura con el mismo concepto'
         sales = Sale.search([('reference', '=', self.description), ('reference', '!=', None)])
-
         for s in sales:
             sale = s
+            referencia_de_factura = sale.referencia_de_factura
             if sale.motivo:
                 motivo = sale.motivo
-        invoices = Invoice.search([('description', '=', sale.description), ('description', '!=', None), ('type', '=', 'out_invoice')])
+        invoices = Invoice.search([('description', '=', referencia_de_factura), ('description', '!=', None), ('type', '=', 'out_invoice')])
         for i in invoices:
             invoice = i
         infoNotaCredito = etree.Element('infoNotaCredito')
@@ -1721,9 +1721,31 @@ class Invoice():
 
     def generate_xml_lote_credit(self):
         pool = Pool()
-        xades = Xades()
-        file_pk12 = base64.encodestring(self.company.electronic_signature)
-        password = base64.encodestring(self.company.password_hash)
+        usuario = self.company.user_ws
+        password_u= self.company.password_ws
+        address_xml = self.web_service()
+        s= xmlrpclib.ServerProxy(address_xml)
+        name = self.company.party.name
+        name_l = name.lower()
+        name_l=name_l.replace(' ','_')
+        name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+        name_c = name_r+'.p12'
+
+        authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
+        if authenticate == '1':
+            pass
+        else:
+            self.raise_user_error(AUTHENTICATE_ERROR)
+
+        if active == '1':
+            self.raise_user_error(ACTIVE_ERROR)
+        else:
+            pass
+
+        nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
+
+        file_pk12 = base64.encodestring(nuevaruta+'/'+name_c)
+        password = self.company.password_pk12
         Invoice = pool.get('account.invoice')
         invoices = Invoice.browse(Transaction().context['active_ids'])
         lote = etree.Element('lote')
@@ -1732,42 +1754,90 @@ class Invoice():
         etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
-            notaCredito = self.generate_xml_credit_note()
-            signed_document = xades.apply_digital_signature(notaCredito, file_pk12, password)
+            notaCredito1 = invoice.generate_xml_credit_note()
+            notaCredito = etree.tostring(notaCredito1, encoding = 'utf8', method = 'xml')
+            signed_document = s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(notaCredito, file_pk12, password,{})
             etree.SubElement(comprobantes, 'comprobante').text = etree.CDATA(signed_document)
         lote.append(comprobantes)
         return lote
 
     def action_generate_lote_credit(self):
-        LIMIT_TO_SEND = 5
+        PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
+        AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
+        ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquise con NODUX"
         WAIT_FOR_RECEIPT = 3
         TITLE_NOT_SENT = u'No se puede enviar el comprobante electronico al SRI'
-        MESSAGE_SEQUENCIAL = u'Los comprobantes electronicos deben ser enviados al SRI en orden secuencial'
-        MESSAGE_TIME_LIMIT = u'Los comprobantes electronicos deben ser enviados al SRI para su autorizacion, en un plazo maximo de 24 horas'
-        key = self.generate_access_key_lote()
-        # XML del comprobante electronico: factura
-        lote = self.generate_xml_lote_credit()
-        #validacion del xml (llama metodo validate xml de sri)
-        inv_xml = DocumentXML(lote, 'lote')
-        inv_xml.validate_xml()
-        # solicitud de autorizacion del comprobante electronico
-        xmlstr = etree.tostring(lote, encoding='utf8', method='xml')
-        inv_xml.send_receipt(xmlstr)
-        time.sleep(WAIT_FOR_RECEIPT)
-        doc_xml, m, auth = inv_xml.request_authorization_lote(key)
-        if doc_xml is None:
-            msg = ' '.join(m)
-            raise m
+        MESSAGE_SEQUENCIAL = u'Los comprobantes electrónicos deben ser enviados al SRI en orden secuencial'
+        MESSAGE_TIME_LIMIT = u'Se ha excedido el límite de tiempo. Los comprobantes electrónicos deben ser enviados al SRI para su autorización, en un plazo máximo de 24 horas'
 
-        if auth == False:
-            self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
-            self.raise_user_error(m)
-        else:
+        if not self.type in ['out_credit_note']:
             pass
+        # Validar que el envio del comprobante electronico se realice dentro de las 24 horas posteriores a su emision
+        pool = Pool()
+        Date = pool.get('ir.date')
+        date_f = self.invoice_date
+        date= Date.today()
+        limit= (date-date_f).days
 
-        self.send_mail_invoice(doc_xml, access_key)
+        usuario = self.company.user_ws
+        password_u= self.company.password_ws
+        access_key = self.generate_access_key()
+        address_xml = self.web_service()
+        s= xmlrpclib.ServerProxy(address_xml)
 
-        return key
+
+        if self.type == 'out_credit_note':
+            name = self.company.party.name
+            name_l=name.lower()
+            name_l=name_l.replace(' ','_')
+            name_r = self.replace_character(name_l) #name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
+            name_c = name_r+'.p12'
+
+            authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
+            if authenticate == '1':
+                pass
+            else:
+                self.raise_user_error(AUTHENTICATE_ERROR)
+
+            if active == '1':
+                self.raise_user_error(ACTIVE_ERROR)
+            else:
+                pass
+
+            nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
+            print "la nueva ruta ", nuevaruta
+            # XML del comprobante electronico: factura
+            lote1 = self.generate_xml_lote_credit()
+            lote = etree.tostring(lote1, encoding = 'utf8', method ='xml')
+            #validacion del xml (llama metodo validate xml de sri)
+            a = s.model.nodux_electronic_invoice_auth.conexiones.validate_xml(lote, 'lote', {})
+            if a:
+                self.raise_user_error(a)
+            file_pk12 = base64.encodestring(nuevaruta+'/'+name_c)
+            file_check = (nuevaruta+'/'+name_c)
+            password = self.company.password_pk12
+            error  = s.model.nodux_electronic_invoice_auth.conexiones.check_digital_signature(file_check,{})
+            if error == '1':
+                self.raise_user_error('No se ha encontrado el archivo de la firma digital(.p12)')
+
+            result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(lote, {})
+            if result != True:
+                self.raise_user_error(result)
+            time.sleep(WAIT_FOR_RECEIPT)
+            # solicitud al SRI para autorizacion del comprobante electronico
+            doc_xml, m, auth, path, numero, num = s.model.nodux_electronic_invoice_auth.conexiones.request_authorization_lote(access_key, name_r, 'lote_out_credit_note',{})
+
+            if doc_xml is None:
+                msg = ' '.join(m)
+                raise m
+            if auth == 'NO AUTORIZADO':
+                self.write([self],{ 'estado_sri': 'NO AUTORIZADO'})
+            else:
+                self.write([self],{ 'estado_sri': 'AUTORIZADO'})
+                self.send_mail_invoice(doc_xml, access_key, send_m, s)
+
+        return access_key
+
 
     def generate_access_key_lote(self):
 
@@ -1923,7 +1993,7 @@ class InvoiceReport(Report):
                     month += l.months
                 if l.weeks:
                     week += l.weeks
-            if day >= 0 :
+            if day >= 0:
                 plazo = day
             if month > 0:
                 plazo = month
