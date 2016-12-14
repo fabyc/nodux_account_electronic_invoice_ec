@@ -344,8 +344,7 @@ class ShipmentOut():
         return clave_acceso
 
     def get_tax_element(self):
-        """
-        """
+
         company = self.company
         number = self.code
         #auth = self.journal_id.auth_id
@@ -463,8 +462,7 @@ class ShipmentOut():
         return guiaRemision
 
     def check_before_sent(self):
-        """
-        """
+
         sql = "select autorizado_sri, number from account_invoice where state='open' and number < '%s' order by number desc limit 1" % self.number
         self.execute(sql)
         res = self.fetchone()
@@ -503,16 +501,6 @@ class ShipmentOut():
         name_r = name_l.replace(' ','_').replace(u'á','a').replace(u'é','e').replace(u'í', 'i').replace(u'ó','o').replace(u'ú','u')
         name_c = name_r+'.p12'
 
-        """
-        if self.company.file_pk12:
-            archivo = self.company.file_pk12
-        else :
-            self.raise_user_error(PK12)
-        f = open(name_c, 'wb')
-        f.write(archivo)
-        f.close()
-        """
-
         authenticate, send_m, active = s.model.nodux_electronic_invoice_auth.conexiones.authenticate(usuario, password_u, {})
         if authenticate == '1':
             pass
@@ -524,11 +512,7 @@ class ShipmentOut():
             pass
 
         nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-        """
-        shutil.copy2(name_c, nuevaruta)
-        os.remove(name_c)
-        print etree.tostring(guiaRemision1,pretty_print=True ,xml_declaration=True, encoding="utf-8")
-        """
+
         guiaRemision1 = self.generate_xml_shipment()
         guiaRemision = etree.tostring(guiaRemision1, encoding = 'utf8', method='xml')
         #validacion del xml (llama metodo validate xml de sri)
@@ -565,8 +549,7 @@ class ShipmentOut():
         return access_key
 
     def action_generate_lote_shipment(self):
-        """
-        """
+
         LIMIT_TO_SEND = 5
         WAIT_FOR_RECEIPT = 3
         TITLE_NOT_SENT = u'No se puede enviar el comprobante electronico al SRI'
@@ -574,7 +557,6 @@ class ShipmentOut():
         MESSAGE_TIME_LIMIT = u'Los comprobantes electronicos deben ser enviados al SRI para su autorizacion, en un plazo maximo de 24 horas'
 
         if not self.type in ['out_shipment']:
-            print "no disponible para otros documentos"
             pass
         access_key = self.generate_access_key_lote()
         if self.type == 'out_shipment':
@@ -588,7 +570,6 @@ class ShipmentOut():
             inv_xml.send_receipt(xmlstr)
             time.sleep(WAIT_FOR_RECEIPT)
             doc_xml, m, auth = inv_xml.request_authorization_lote(access_key)
-            print "esta es la auth", auth
 
             if doc_xml is None:
                 msg = ' '.join(m)
@@ -640,21 +621,18 @@ class ShipmentOut():
 
         Invoice = pool.get('account.invoice')
         invoices = Invoice.browse(Transaction().context['active_ids'])
-        print invoices
         lote = etree.Element('lote')
         lote.set("version", "1.0.0")
         etree.SubElement(lote, 'claveAcceso').text = self.generate_access_key_lote()
         etree.SubElement(lote, 'ruc').text = self.company.party.vat_number
         comprobantes = etree.Element('comprobantes')
         for invoice in invoices:
-            print "Factura ",invoice
             factura1 = invoice.generate_xml_invoice()
             factura = etree.tostring(factura1, encoding = 'utf8', method = 'xml')
             #print etree.tostring(factura1, pretty_print = True, xml_declaration=True, encoding="utf-8")
             signed_document = s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
             etree.SubElement(comprobantes, 'comprobante').text = etree.CDATA(signed_document)
         lote.append(comprobantes)
-        print etree.tostring(lote,pretty_print=True ,xml_declaration=True, encoding="utf-8")
         return lote
 
 
@@ -673,7 +651,6 @@ class ShipmentOut():
         for shipment in shipment:
             guiaRemision = self.generate_xml_shipment()
             signed_document = xades.apply_digital_signature(guiaRemision, file_pk12, password)
-            print etree.tostring(guiaRemision,pretty_print=True ,xml_declaration=True, encoding="utf-8")
             etree.SubElement(comprobantes, 'comprobante').text = etree.CDATA(signed_document)
         lote.append(comprobantes)
         return lote

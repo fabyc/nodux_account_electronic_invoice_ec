@@ -12,7 +12,6 @@ this repository contains the full copyright notices and license terms. -->
           <field name="name">COMPENSACIÓN DE DEUDAS</field>
           <field name="code">15</field>
         </record>
-        
         <record model="account.formas_pago" id="afp_16">
           <field name="name">TARJETA DE DÉBITO</field>
           <field name="code">16</field>
