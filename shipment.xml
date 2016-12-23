@@ -46,5 +46,51 @@
            <field name="action" ref="print_shipment_e"/>
        </record>
 
+       <!--Internal Shipment -->
+
+       <record model="ir.ui.view" id="shipment_internal_view_form">
+          <field name="model">stock.shipment.internal</field>
+          <field name="type">form</field>
+          <field name="inherit" ref="stock.shipment_internal_view_form"/>
+          <field name="name">shipment_internal_form</field>
+      </record>
+
+      <record model="ir.ui.view" id="shipment_internal_view_tree">
+          <field name="model">stock.shipment.internal</field>
+          <field name="type">tree</field>
+          <field name="inherit" ref="stock.shipment_internal_view_tree"/>
+          <field name="name">shipment_internal_tree</field>
+      </record>
+
+      <record model="ir.ui.view" id="send_sri_lote_shipment_internal_start_view_form">
+          <field name="model">nodux.account.electronic.invoice.ec.lote.shipment_internal.start</field>
+          <field name="type">form</field>
+          <field name="name">send_sri_lote_shipment_internal_form</field>
+      </record>
+
+      <record model="ir.action.wizard" id="send_sri_lote_shipment_internal">
+          <field name="name">Enviar SRI</field>
+          <field name="wiz_name">nodux.account.electronic.invoice.ec.lote.shipment_internal</field>
+      </record>
+
+       <record model="ir.action.keyword" id="action_send_sri_lote_shipment_internal_keyword">
+          <field name="keyword">form_action</field>
+          <field name="model">stock.shipment.internal,-1</field>  <!-- Que vista de modelo aparece -->
+          <field name="action" ref="send_sri_lote_shipment_internal"/>
+      </record>
+
+      <record model="ir.action.report" id='print_shipment_internal_e'>
+          <field name="name">RIDE Guía de Remisión</field>
+          <field name="model">stock.shipment.internal</field>
+          <field name="report_name">stock.shipment.internal.print_shipment_internal_e</field>
+          <field name="report">nodux_account_electronic_invoice_ec/remission_guide_internal.odt</field>
+          <field name="style"></field>
+      </record>
+
+      <record model="ir.action.keyword" id="report_shipment_internal_e_keyword">
+         <field name="keyword">form_print</field>
+         <field name="model">stock.shipment.internal,-1</field>
+         <field name="action" ref="print_shipment_internal_e"/>
+     </record>
     </data>
 </tryton>

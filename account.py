@@ -38,6 +38,7 @@ class Configuration:
     __name__ = 'account.configuration'
 
     lote = fields.Boolean(u'Enviar comprobantes de Retención por lote')
+    lote_remission = fields.Boolean(u'Enviar Guía de Remisión por lote')
 
     @classmethod
     def __setup__(cls):

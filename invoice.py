@@ -235,6 +235,7 @@ class Invoice():
                         invoice.get_detail_element()
                         invoice.action_generate_invoice()
                         invoice.connect_db()
+                        
             elif invoice.type == 'in_invoice':
                 pool = Pool()
                 Module = pool.get('ir.module.module')

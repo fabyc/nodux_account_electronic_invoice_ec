@@ -5,5 +5,7 @@
     <xpath expr="/form/field[@name='default_account_payable']" position="after">
         <label name="lote"/>
         <field name="lote"/>
+        <label name="lote_remission"/>
+        <field name="lote_remission"/>
     </xpath>
 </data>

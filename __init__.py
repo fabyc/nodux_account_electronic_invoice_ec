@@ -30,13 +30,17 @@ def register():
         AccountWithholding,
         Configuration,
         Address,
+        ShipmentInternal,
+        SendSriLoteStartShipmentInternal,
         module='nodux_account_electronic_invoice_ec', type_='model')
     Pool.register(
         SendSriLote,
         SendSriLoteShipment,
+        SendSriLoteShipmentInternal,
         module='nodux_account_electronic_invoice_ec', type_='wizard')
     Pool.register(
         InvoiceReport,
         PrintWithholdingE,
         PrintShipmentE,
+        PrintShipmentInternalE,
         module='nodux_account_electronic_invoice_ec', type_='report')
