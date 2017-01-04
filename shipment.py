@@ -836,6 +836,10 @@ class ShipmentInternal():
         return True
 
     @classmethod
+    def default_placa(cls):
+        return "LCD-1250"
+
+    @classmethod
     @ModelView.button
     @Workflow.transition('done')
     def done(cls, shipments):
