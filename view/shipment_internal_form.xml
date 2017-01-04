@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<data>
+    <xpath expr="/form/field[@name='moves']" position="after">
+      <notebook colspan="4">
+          <page string="Facturacion Electronica Ecuador" id="electronic_invoice">
+              <label name="remision"/>
+              <field name="remision"/>
+              <label name="estado_sri"/>
+              <field name="estado_sri"/>
+              <label name="motivo_traslado"/>
+              <field name="motivo_traslado"/>
+              <label name="dir_destinatario"/>
+              <field name="dir_destinatario"/>
+              <label name="partida"/>
+              <field name="partida"/>
+              <label name="number_c"/>
+              <field name="number_c"/>
+              <label name="cod_estab_destino"/>
+              <field name="cod_estab_destino"/>
+              <label name="ruta"/>
+              <field name="ruta"/>
+              <label name="transporte"/>
+              <field name="transporte"/>
+              <label name="placa"/>
+              <field name="placa"/>
+          </page>
+      </notebook>
+    </xpath>
+</data>
