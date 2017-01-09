@@ -235,7 +235,7 @@ class Invoice():
                         invoice.get_detail_element()
                         invoice.action_generate_invoice()
                         invoice.connect_db()
-                        
+
             elif invoice.type == 'in_invoice':
                 pool = Pool()
                 Module = pool.get('ir.module.module')
@@ -1408,6 +1408,14 @@ class Invoice():
 
 
     def generate_xml_lote(self):
+        PK12 = u'No ha configurado los datos de la empresa. Dirijase a: \n Empresa -> NODUX WS'
+        AUTHENTICATE_ERROR = u'Error en datos de ingreso verifique: \nUSARIO Y CONTRASEÑA'
+        ACTIVE_ERROR = u"Ud. no se encuentra activo, verifique su pago. \nComuníquise con NODUX"
+        WAIT_FOR_RECEIPT = 3
+        TITLE_NOT_SENT = u'No se puede enviar el comprobante electronico al SRI'
+        MESSAGE_SEQUENCIAL = u'Los comprobantes electrónicos deben ser enviados al SRI en orden secuencial'
+        MESSAGE_TIME_LIMIT = u'Se ha excedido el límite de tiempo. Los comprobantes electrónicos deben ser enviados al SRI para su autorización, en un plazo máximo de 24 horas'
+
         pool = Pool()
         usuario = self.company.user_ws
         password_u= self.company.password_ws
