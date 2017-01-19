@@ -811,7 +811,6 @@ class ShipmentInternal():
     numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
     transporte = fields.Many2One('carrier','Transportista',states={
         'invisible':~Eval('remision',False),
-        'required' : Eval('remision', True),
         'readonly': Eval('state') == 'done',
     })
 
@@ -840,6 +839,32 @@ class ShipmentInternal():
         return "LCD-1250"
 
     @classmethod
+    def default_motivo_traslado(cls):
+        return "Cambio de Bodega"
+
+    @classmethod
+    def default_ruta(cls):
+        return "Loja-Loja"
+
+    @classmethod
+    def default_cod_estab_destino(cls):
+        return "001"
+
+    @fields.depends('from_location')
+    def on_change_from_location(self):
+        res = {}
+        if self.from_location:
+            res['partida'] = self.from_location.name
+        return res
+
+    @fields.depends('to_location')
+    def on_change_to_location(self):
+        res = {}
+        if self.to_location:
+            res['dir_destinatario'] = self.to_location.name
+        return res
+
+    @classmethod
     @ModelView.button
     @Workflow.transition('done')
     def done(cls, shipments):
@@ -852,6 +877,10 @@ class ShipmentInternal():
             lote_remission = Configuration(1).lote_remission
 
         for shipment in shipments:
+            for move in shipment.moves:
+                move.internal = True
+                move.save()
+
             if shipment.remision == True and lote_remission == False:
                 shipment.get_tax_element()
                 shipment.get_shipment_element()
@@ -859,6 +888,7 @@ class ShipmentInternal():
                 shipment.generate_xml_shipment()
                 shipment.action_generate_shipment()
                 shipment.connect_db()
+
 
         Move.do([m for s in shipments for m in s.moves])
         cls.write([s for s in shipments if not s.effective_date], {
@@ -1084,9 +1114,11 @@ class ShipmentInternal():
             etree.SubElement(infoGuiaRemision, 'dirEstablecimiento').text = self.company.party.addresses[0].street
         if self.company.party.addresses:
             etree.SubElement(infoGuiaRemision, 'dirPartida').text = self.partida
+
         etree.SubElement(infoGuiaRemision, 'razonSocialTransportista').text= self.transporte.party.name
         etree.SubElement(infoGuiaRemision, 'tipoIdentificacionTransportista').text= tipoIdentificacion[self.transporte.party.type_document]
         etree.SubElement(infoGuiaRemision, 'rucTransportista').text= self.transporte.party.vat_number
+
         etree.SubElement(infoGuiaRemision, 'rise').text= "No  obligatorios"
         if self.company.party.mandatory_accounting:
             etree.SubElement(infoGuiaRemision, 'obligadoContabilidad').text = self.company.party.mandatory_accounting
@@ -1101,20 +1133,6 @@ class ShipmentInternal():
         return infoGuiaRemision
 
     def get_destinatarios(self):
-        """
-        ERROR= u"No existe factura registrada con el número que ingresó"
-        num_mod=self.number_c
-        pool = Pool()
-        Invoices = pool.get('account.invoice')
-        invoice = Invoices.search([('number','=',num_mod)])
-        if invoice:
-            pass
-        else:
-            self.raise_user_error(ERROR)
-        for i in invoice:
-            date_mod = i.invoice_date.strftime('%d/%m/%Y')
-            num_aut = i.numero_autorizacion
-        """
         company =  self.company
         customer = self.company
         destinatarios=etree.Element('destinatarios')
@@ -1126,14 +1144,7 @@ class ShipmentInternal():
         etree.SubElement(destinatario, 'docAduaneroUnico').text = " "
         etree.SubElement(destinatario, 'codEstabDestino').text = self.cod_estab_destino
         etree.SubElement(destinatario, 'ruta').text = self.ruta
-        """
-        etree.SubElement(destinatario, 'codDocSustento').text = "01"
-        etree.SubElement(destinatario, 'numDocSustento').text = num_mod
-        if num_aut:
-            #etree.SubElement(destinatario, 'numAutDocSustento').text = num_aut
-            print "Si hay autorizacion"
-        etree.SubElement(destinatario, 'fechaEmisionDocSustento').text = date_mod#self.create_date.strftime('%d/%m/%Y')
-        """
+
         detalles = etree.Element('detalles')
         def fix_chars(code):
             if code:
@@ -1400,7 +1411,6 @@ class PrintShipmentInternalE(CompanyReport):
             shipment = Shipment(ids[0])
             if shipment.code:
                 res = (res[0], res[1], res[2], res[3] + ' - ' + shipment.code)
-        print "Res ", res
         return res
 
     @classmethod
@@ -1412,9 +1422,7 @@ class PrintShipmentInternalE(CompanyReport):
     def parse(cls, report, records, data, localcontext):
         pool = Pool()
         Shipment = pool.get('stock.shipment.internal')
-        print "records ", records
         shipment = records[0]
-        print "Shipment ", shipment
         num_mod=shipment.number_c
         pool = Pool()
         localcontext['company'] = Transaction().context.get('company')

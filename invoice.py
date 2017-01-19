@@ -719,7 +719,6 @@ class Invoice():
             signed_document= s.model.nodux_electronic_invoice_auth.conexiones.apply_digital_signature(factura, file_pk12, password,{})
             #signed_document= self.replace_character(signed_document)
             #envio al sri para recepcion del comprobante electronico
-
             result = s.model.nodux_electronic_invoice_auth.conexiones.send_receipt(signed_document, {})
             if result != True:
                 self.raise_user_error(result)
@@ -1814,7 +1813,6 @@ class Invoice():
                 pass
 
             nuevaruta = s.model.nodux_electronic_invoice_auth.conexiones.save_pk12(name_l, {})
-            print "la nueva ruta ", nuevaruta
             # XML del comprobante electronico: factura
             lote1 = self.generate_xml_lote_credit()
             lote = etree.tostring(lote1, encoding = 'utf8', method ='xml')
