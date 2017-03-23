@@ -374,7 +374,8 @@ class Invoice():
         total_ventas = total_paid + total_posted
 
         if total_ventas > 1000:
-            self.raise_user_error(LIMIT_EXCEEDED)
+            pass
+            #self.raise_user_error(LIMIT_EXCEEDED)
         return total_ventas
 
     def replace_character(self, cadena):

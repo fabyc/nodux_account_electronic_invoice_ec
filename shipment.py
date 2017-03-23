@@ -776,51 +776,51 @@ class ShipmentInternal():
     __name__ = 'stock.shipment.internal'
 
     remision = fields.Boolean(u'Enviar Guía de Remisión al SRI', states={
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     placa = fields.Char('Placa del medio de Transporte', states={
         'invisible':~Eval('remision',False),
         'required': Eval('remision',True),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     cod_estab_destino = fields.Char(u'Código de establecimiento de Destino', size=3, states={
         'invisible':~Eval('remision',False),
         'required' : Eval('remision', True),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     ruta = fields.Char('Ruta', states={
         'invisible':~Eval('remision',False),
         'required' : Eval('remision',True),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     partida = fields.Char('Direccion de partida', states={
         'invisible':~Eval('remision',False),
         'required' : Eval('remision',True),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     estado_sri= fields.Char(u'Estado Comprobante-Electrónico', size=24, readonly=True, states={
         'invisible':~Eval('remision',False),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     number_c= fields.Char(u'Número del Documento de Sustento', size=17, states={
         'invisible':~Eval('remision',False),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     path_xml = fields.Char(u'Path archivo xml de comprobante', readonly=True)
     path_pdf = fields.Char(u'Path archivo pdf de factura', readonly=True)
     numero_autorizacion = fields.Char(u'Número de Autorización', readonly= True)
     transporte = fields.Many2One('carrier','Transportista',states={
         'invisible':~Eval('remision',False),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
 
     motivo_traslado = fields.Char('Motivo de Traslado', states={
         'required' : Eval('remision', True),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
     dir_destinatario = fields.Char(u'Dirección de LLegada de Productos', states={
         'required' : Eval('remision', True),
-        'readonly': Eval('state') == 'done',
+        'readonly': Eval('state').in_(['annulled', 'done']),
     })
 
 
