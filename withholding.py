@@ -132,6 +132,14 @@ class AccountWithholding():
     @ModelView.button
     def validate_withholding(cls, withholdings):
         for withholding in withholdings:
+            if withholding.type == 'out_withholding':
+                if withholding.efectivo == True:
+                    withholding.raise_user_warning('confirm_%s' % withholding.id,
+                           'Esta seguro de realizar la retencion en efectivo.')
+                else:
+                    withholding.raise_user_warning('confirm_%s' % withholding.id,
+                           'Esta seguro que la retencion no es en efectivo')
+
             if withholding.type in ('in_withholding'):
                 Invoice = Pool().get('account.invoice')
                 invoices = Invoice.search([('number','=',withholding.reference), ('number','!=', None)])
