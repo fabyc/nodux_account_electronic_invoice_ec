@@ -2110,11 +2110,11 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
-        taxes1 = None
-        taxes2 = None
-        taxes3 = None
 
         for line in invoice.lines:
+            taxes1 = None
+            taxes2 = None
+            taxes3 = None
             if line.product.taxes_category == True:
                 if line.product.category.taxes_parent == True:
                     taxes1= Taxes1.search([('category','=', line.product.category.parent)])
@@ -2148,7 +2148,6 @@ class InvoiceReport(Report):
         pool = Pool()
         Taxes1 = pool.get('product.category-customer-account.tax')
         Taxes2 = pool.get('product.template-customer-account.tax')
-
 
         for line in invoice.lines:
             taxes1 = None
