@@ -515,7 +515,7 @@ class Invoice():
             taxes2 = None
             taxes3= None
             detalle = etree.Element('detalle')
-            etree.SubElement(detalle, 'codigoPrincipal').text = fix_chars(line.product.code)
+            etree.SubElement(detalle, 'codigoPrincipal').text =  fix_chars(line.product.code[0:25])
             etree.SubElement(detalle, 'descripcion').text = self.replace_character(line.description)#fix_chars(line.description)
             etree.SubElement(detalle, 'cantidad').text = '%.2f' % (line.quantity)
             etree.SubElement(detalle, 'precioUnitario').text = '%.2f' % (line.unit_price)
